@@ -1,0 +1,74 @@
+{
+ "actions": [],
+ "autoname": "format:TASK-{###}",
+ "creation": "2025-07-21 15:39:30.608910",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "taskname",
+  "assigneduser",
+  "startdate",
+  "enddate",
+  "status",
+  "progress"
+ ],
+ "fields": [
+  {
+   "fieldname": "taskname",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Task Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "assigneduser",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Assigned User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "startdate",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "enddate",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "End Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Not Started\nIn Progress\nOn Hold\nCompleted\nCancelled",
+   "reqd": 1
+  },
+  {
+   "fieldname": "progress",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Progress",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-07-21 16:02:07.487063",
+ "modified_by": "Administrator",
+ "module": "Task Manager",
+ "name": "Tasks",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

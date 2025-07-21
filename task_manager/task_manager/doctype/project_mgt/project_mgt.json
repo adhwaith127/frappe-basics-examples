@@ -1,0 +1,97 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-07-21 16:00:51.033148",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "projectname",
+  "startdate",
+  "enddate",
+  "partusers",
+  "projmanager",
+  "priority",
+  "comppercent",
+  "tasks"
+ ],
+ "fields": [
+  {
+   "fieldname": "projectname",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Project Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "startdate",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "enddate",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "End Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "partusers",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Participating Users",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "projmanager",
+   "fieldtype": "Link",
+   "label": "Project Manager",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh",
+   "reqd": 1
+  },
+  {
+   "fieldname": "comppercent",
+   "fieldtype": "Float",
+   "label": "Completion Percent"
+  },
+  {
+   "fieldname": "tasks",
+   "fieldtype": "Table",
+   "label": "Tasks",
+   "options": "Tasks"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-07-21 17:09:14.567581",
+ "modified_by": "Administrator",
+ "module": "Task Manager",
+ "name": "Project MGT",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
