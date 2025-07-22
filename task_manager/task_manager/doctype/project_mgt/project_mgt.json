@@ -6,12 +6,14 @@
  "engine": "InnoDB",
  "field_order": [
   "projectname",
+  "projmanager",
+  "partusers",
+  "comppercent",
+  "column_break_jbov",
   "startdate",
   "enddate",
-  "partusers",
-  "projmanager",
   "priority",
-  "comppercent",
+  "section_break_ehdh",
   "tasks"
  ],
  "fields": [
@@ -38,10 +40,9 @@
   },
   {
    "fieldname": "partusers",
-   "fieldtype": "Link",
-   "in_list_view": 1,
+   "fieldtype": "Table MultiSelect",
    "label": "Participating Users",
-   "options": "User",
+   "options": "Listusers",
    "reqd": 1
   },
   {
@@ -68,11 +69,19 @@
    "fieldtype": "Table",
    "label": "Tasks",
    "options": "Tasks"
+  },
+  {
+   "fieldname": "column_break_jbov",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_ehdh",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-21 17:09:14.567581",
+ "modified": "2025-07-22 09:13:11.950957",
  "modified_by": "Administrator",
  "module": "Task Manager",
  "name": "Project MGT",
@@ -91,6 +100,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []
