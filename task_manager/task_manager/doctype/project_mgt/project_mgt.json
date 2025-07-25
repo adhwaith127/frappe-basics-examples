@@ -1,6 +1,6 @@
 {
  "actions": [],
- "allow_rename": 1,
+ "autoname": "format:PRJ-{###}",
  "creation": "2025-07-21 16:00:51.033148",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -81,10 +81,11 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-22 09:13:11.950957",
+ "modified": "2025-07-22 09:41:34.112177",
  "modified_by": "Administrator",
  "module": "Task Manager",
  "name": "Project MGT",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
