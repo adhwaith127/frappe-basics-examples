@@ -25,7 +25,8 @@ def get_checkin_data(from_date=None, to_date=None, specific_date=None):
             ec.employee,
             ec.time,
             ec.log_type,
-            em.department
+            em.department,
+            em.reports_to
         FROM
             `tabEmployee Checkin` ec
         LEFT JOIN 
@@ -99,6 +100,7 @@ def calculate_work_hours(grouped_data):
             result.append({
                 "employee": emp,
                 "department": logs[0]['department'],
+                "reports_to": logs[0]['reports_to'],
                 "date": date,
                 "work_time": total_hours,
                 "entry": entry_time,
@@ -173,8 +175,9 @@ def create_employee_registry(daily_data, monthly_data,weekly_data):
                 employee_registry[emp_name] = {
                     'employee_info': {
                         'name': emp_name,
-                        'department': record.get('department', 'Unknown')
-                    },
+                        'department': record.get('department', 'Unknown'),
+                        'reports_to': record.get('reports_to', None) 
+                       },
                     'daily_data': None,
                     'monthly_data': None
                 }
@@ -188,7 +191,8 @@ def create_employee_registry(daily_data, monthly_data,weekly_data):
                 employee_registry[emp_name] = {
                     'employee_info': {
                         'name': emp_name,
-                        'department': record.get('department', 'Unknown')
+                        'department': record.get('department', 'Unknown'),
+                        'reports_to': record.get('reports_to', None) 
                     },
                     'daily_data': None,
                     'monthly_data': None
@@ -202,7 +206,8 @@ def create_employee_registry(daily_data, monthly_data,weekly_data):
                 employee_registry[emp_name] = {
                     'employee_info': {
                         'name': emp_name,
-                        'department': record.get('department', 'Unknown')
+                        'department': record.get('department', 'Unknown'),
+                        'reports_to': record.get('reports_to', None) 
                     },
                     'daily_data': None,
                     'weekly_data': None
@@ -357,65 +362,7 @@ def add_weekly_data_to_registry(employee_registry,weekly_data):
                 'total_working_days': record['total_weekly_working_days']
             }
             
-    return employee_registry
-
-
-#main function
-@frappe.whitelist(allow_guest=True)
-def fetch_checkins(from_date=None, to_date=None, specific_date=None):
-    try:
-        # Validate input parameters
-        if from_date and not to_date:
-            frappe.throw("Provide To date")
-        if to_date and not from_date:
-            frappe.throw("Provide From date")
-        if (from_date and specific_date) or (to_date and specific_date):
-            frappe.throw("Provide either Date range or a single date")
-
-        # Set date as today if no date provided
-        if specific_date is None and from_date is None and to_date is None:
-            specific_date = today()
-
-        # find data if date range is provided
-        if from_date and to_date:
-            emp_data = get_checkin_data(from_date, to_date, None)
-            
-            if isinstance(emp_data, dict) and ('error' in emp_data or 'message' in emp_data):
-                return emp_data
-                
-            grouped_data = sort_checkin_data(emp_data)
-            result = calculate_work_hours(grouped_data)
-            return checkin_data_for_date_range(result)
-
-        # find data if specific_date or today is selected
-        elif specific_date:
-            # Get daily data
-            daily_emp_data = get_checkin_data(None, None, specific_date)
-            
-            daily_result = None
-            if not (isinstance(daily_emp_data, dict) and ('error' in daily_emp_data or 'message' in daily_emp_data)):
-                grouped_daily = sort_checkin_data(daily_emp_data)
-                daily_result = calculate_work_hours(grouped_daily)
-            
-            # Get monthly data
-            monthly_result = monthly_average(specific_date)
-
-            #get weekly data
-            weekly_result=find_weekly_average(specific_date)
-            
-            # creating employee list and combining monthly and daily data
-            employee_registry = create_employee_registry(daily_result, monthly_result,weekly_result)
-            employee_registry = add_daily_data_to_registry(employee_registry, daily_result)
-            employee_registry = add_monthly_data_to_registry(employee_registry, monthly_result)
-            employee_registry = add_weekly_data_to_registry(employee_registry, weekly_result)
-            
-            return {"employees": employee_registry,"length":len(employee_registry)}
-
-    except Exception as e:
-        frappe.log_error(str(e), "Unexpected error in fetch_checkins")
-        return {"error": "Unexpected error occurred."}
-    
-
+    return employee_registry    
 
 @frappe.whitelist(allow_guest=True)
 #find starting monday and ending of week from the given date
@@ -504,3 +451,59 @@ def calculate_weekly_average(employee_data,working_days,week_start,week_end):
         })
 
     return {"result": result, "total_count": len(result)}
+
+
+#main function
+@frappe.whitelist(allow_guest=True)
+def fetch_checkins(from_date=None, to_date=None, specific_date=None,employee_id=None):
+    try:
+        # Validate input parameters
+        if from_date and not to_date:
+            frappe.throw("Provide To date")
+        if to_date and not from_date:
+            frappe.throw("Provide From date")
+        if (from_date and specific_date) or (to_date and specific_date):
+            frappe.throw("Provide either Date range or a single date")
+
+        # Set date as today if no date provided
+        if specific_date is None and from_date is None and to_date is None:
+            specific_date = today()
+
+        # find data if date range is provided
+        if from_date and to_date:
+            emp_data = get_checkin_data(from_date, to_date, None)
+            
+            if isinstance(emp_data, dict) and ('error' in emp_data or 'message' in emp_data):
+                return emp_data
+                
+            grouped_data = sort_checkin_data(emp_data)
+            result = calculate_work_hours(grouped_data)
+            return checkin_data_for_date_range(result)
+
+        # find data if specific_date or today is selected
+        elif specific_date:
+            # Get daily data
+            daily_emp_data = get_checkin_data(None, None, specific_date)
+            
+            daily_result = None
+            if not (isinstance(daily_emp_data, dict) and ('error' in daily_emp_data or 'message' in daily_emp_data)):
+                grouped_daily = sort_checkin_data(daily_emp_data)
+                daily_result = calculate_work_hours(grouped_daily)
+            
+            # Get monthly data
+            monthly_result = monthly_average(specific_date)
+
+            #get weekly data
+            weekly_result=find_weekly_average(specific_date)
+            
+            # creating employee list and combining monthly and daily data
+            employee_registry = create_employee_registry(daily_result, monthly_result,weekly_result)
+            employee_registry = add_daily_data_to_registry(employee_registry, daily_result)
+            employee_registry = add_monthly_data_to_registry(employee_registry, monthly_result)
+            employee_registry = add_weekly_data_to_registry(employee_registry, weekly_result)
+            
+            return {"employees": employee_registry,"length":len(employee_registry)}
+
+    except Exception as e:
+        frappe.log_error(str(e), "Unexpected error in fetch_checkins")
+        return {"error": "Unexpected error occurred."}
