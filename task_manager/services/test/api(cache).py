@@ -4,6 +4,8 @@ from collections import OrderedDict, defaultdict
 from datetime import datetime, date, timedelta
 import calendar
 
+# --- Helper functions remain the same ---
+
 # Calculates the number of working days (Mon-Fri) in a given date range.
 def _get_working_days(start_date, end_date):
     try:
@@ -30,19 +32,33 @@ def _get_working_days(start_date, end_date):
 
 # calculates total work hours from a sorted list of daily check-in logs.
 def _calculate_daily_work_hours(logs):
-
     total_hours = 0.      # total daily working time
     last_in_time = None   # Used to remember the last time the person checked IN
+    first_in_time=None
+    last_out_time=None
+    
+    if not logs:
+        return {
+            "employee": None,"department": None,"reports_to": None,
+            "date": None,"work_time": 0.0,"entry_time": None,
+            "exit_time": None,"status": "absent"
+        }
+    
+    # logs.sort(key=lambda x:x['time'])      <-- essentially redundant since sql gives sorted data already
 
     for log in logs:
         if log['log_type'] == "IN" and last_in_time is None:
             last_in_time = log['time']
-        elif log['log_type'] == "OUT" and last_in_time is not None:
-            total_hours += time_diff_in_hours(log['time'], last_in_time)  # calculate difference between IN and OUT
-            last_in_time = None          # reset last_in_time to None so we can track the next IN/OUT pair
+            # first_in_time=log['time']
+        elif log['log_type'] == "OUT" :
+            if last_in_time is not None:
+                total_hours += time_diff_in_hours(log['time'], last_in_time)  # calculate difference between IN and OUT
+                last_in_time = None          # reset last_in_time to None so we can track the next IN/OUT pair
+            last_out_time=log['time'].strftime("%H:%M")
 
     first_log_time = logs[0]['time'].strftime("%H:%M")   # finding first and last logs of the day
-    last_log_time = logs[-1]['time'].strftime("%H:%M")
+    # last_log_time = logs[-1]['time'].strftime("%H:%M")
+    last_log_time=last_out_time
 
     return {
         "employee": logs[0]['employee'],
@@ -51,7 +67,8 @@ def _calculate_daily_work_hours(logs):
         "date": format_datetime(logs[0]['time'], 'yyyy-MM-dd'),
         "work_time": round(total_hours, 2),
         "entry_time": first_log_time,
-        "exit_time": last_log_time
+        "exit_time": last_log_time,
+        "status": "present"
     }
 
 # Fetches, groups, and processes check-in data for a given date range.
@@ -75,7 +92,7 @@ def get_processed_checkin_data(from_date, to_date):
         raw_data = frappe.db.sql(query, params, as_dict=True)    # set result inside raw_data variable
         if not raw_data:                                   
             return []
-
+    
         grouped_data = defaultdict(lambda: defaultdict(list))     # creating a default dict. this when called with an entry like this ['x']
         for entry in raw_data:                                    # will create a new list with that name (x)
             date_str = format_datetime(entry['time'], 'yyyy-MM-dd')  # Convert the check-in time to a date string
@@ -91,10 +108,6 @@ def get_processed_checkin_data(from_date, to_date):
                     daily_summaries.append(daily_summary)
         
         return daily_summaries
-
-    except frappe.db.Error as e:
-        frappe.log_error(f"Database error in checkin data | From: {from_date} | To: {to_date} | Error: {str(e)}", "Checkin_DB_Error")
-        return []
     except Exception as e:
         frappe.log_error(f"Checkin data processing error | From: {from_date} | To: {to_date} | Error: {str(e)}", "Checkin_Processing_Error")
         return []
@@ -102,7 +115,6 @@ def get_processed_checkin_data(from_date, to_date):
 
 # function to create a summary from a list of daily processed records.
 def _create_period_summary(daily_records, total_working_days, result_type):
-
     summary_data = defaultdict(lambda: {
         'total_work_hours': 0.0, 'days_worked': 0,
         'department': None, 'reports_to': None
@@ -163,18 +175,14 @@ def get_hierarchy_map():
                 hierarchy[emp.reports_to].append(emp.name)
         return hierarchy
 
-    except frappe.db.Error as e:
-        frappe.log_error(f"Database error in hierarchy map | Error: {str(e)}", "Hierarchy_DB_Error")
-        return defaultdict(list)
     except Exception as e:
         frappe.log_error(f"Hierarchy map error | Error: {str(e)}", "Hierarchy_Error")
         return defaultdict(list)
 
-
-# finds all direct and indirect subordinates for a given manager -> using recursion here ????  (through iteration, not actual recursion)(cgpt)
+# finds all direct and indirect subordinates for a given manager (uses iteration, not actual recursion)(cgpt)
 def get_all_subordinates(manager_id, hierarchy_map):
     try:
-        if not manager_id or not hierarchy_map:
+        if not manager_id or not hierarchy_map:               # <--- this method uses BFS
             return []
         
         all_subs = set()
@@ -196,18 +204,17 @@ def get_all_subordinates(manager_id, hierarchy_map):
         frappe.log_error(f"Subordinates search error | Manager: {manager_id} | Error: {str(e)}", "Subordinates_Error")
         return []
 
-
 # Structures the pre-filtered employee registry into a final format with manager data at the top level and subordinates nested.
 def _structure_data_for_hierarchy(employee_registry, manager_id, subordinate_ids):
+
     manager_data = employee_registry.get(manager_id, {})
-    
     subordinates_data = {
         emp_id: data # add the employees data if below conditions match (for and if written in reverse)
         for emp_id, data in employee_registry.items() 
-        if emp_id in subordinate_ids       # idea--->  If it’s not true, nothing happens — it just skips that pair.
+        if emp_id in subordinate_ids       # idea--->  If it's not true, nothing happens — it just skips that pair.
     }
-
     return {
+        "user_id":manager_id,
         "manager_data": manager_data,
         "subordinates_data": subordinates_data,
         "total_count(with manager)": len(subordinates_data) + (1 if manager_data else 0)
@@ -248,30 +255,29 @@ def fetch_checkins(from_date=None, to_date=None, specific_date=None):
                 if s_date > getdate(today()):    # if selected date(datetime.date object) greater than today 
                     return {"error": "Cannot fetch data for a future date."}
                 
-                # --- 3a. NEW: Get user hierarchy first to build a complete employee list ---
-                # user_id=frappe.db.get_value("User", {"email": frappe.session.user}, "username")
-                # if frappe.session.user:
-                #     pass
-                # else:   #harcoded below
-                user_id = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, "name")
-                print("#"*50)
-                # print (user_id)
-                print(frappe.session.user)
-                if not user_id:
-                    frappe.throw("Logged-in user is not linked to an active employee record.")
+                # --- 3a. Get user hierarchy first to build a complete employee list ---
 
-                # user_id="MURALY G"
+                if frappe.session.user == 'Administrator':
+                    user_id="administrator"
+                    employee_details=frappe.get_all("Employee",filters=[['status','=','Active']],fields=["name",'department','reports_to'])
+                else:
+                    user_id=frappe.db.get_value("Employee", {"user_id": frappe.session.user}, "name")
+                    if not user_id:
+                        frappe.throw("Logged-in user is not linked to an active employee record.")
+                    
+                    hierarchy = get_hierarchy_map()
+                    subordinates = get_all_subordinates(user_id, hierarchy)
+                    allowed_employees = set(subordinates + [user_id])
 
-                hierarchy = get_hierarchy_map()
-                subordinates = get_all_subordinates(user_id, hierarchy)
-                allowed_employees = set(subordinates + [user_id])
+                    employee_details = frappe.get_all("Employee",           # get details of manager and subordinates
+                        filters={"name": ["in", list(allowed_employees)]},
+                        fields=["name", "department", "reports_to"]
+                    )
 
-                employee_details = frappe.get_all("Employee",           # get details of manager and subordinates
-                    filters={"name": ["in", list(allowed_employees)]},
-                    fields=["name", "department", "reports_to"]
-                )
+                print("#"*50)                  # testing !!!!
+                print(frappe.session.user)     # testing !!!!
                 
-                # --- 3b. NEW: Pre-build registry with all employees in the hierarchy ---
+                # --- 3b. Pre-build registry with all employees in the hierarchy ---
                 # Attendance data keys are initialized as empty dicts.
                 employee_registry = {
                     emp.name: {
@@ -291,18 +297,24 @@ def fetch_checkins(from_date=None, to_date=None, specific_date=None):
                 
                 all_processed_data = get_processed_checkin_data(month_start, s_date)
                 
-                # --- 3d. If data exists, populate the registry ---  # calculated separately to avoid missing summary
+                # populating registry. calculated separately to avoid missing summary
                 
+                # calculate working days altogether
+                working_day_counts={
+                    "monthly":_get_working_days(month_start,s_date),
+                    "weekly":_get_working_days(week_start,week_end),
+                }
+
                 if all_processed_data:         # calculate monthly
-                    monthly_working_days = _get_working_days(month_start, s_date)
-                    monthly_summary = _create_period_summary(all_processed_data, monthly_working_days, "monthly_summary")
+                    # monthly_working_days = _get_working_days(month_start, s_date)
+                    monthly_summary = _create_period_summary(all_processed_data, working_day_counts["monthly"], "monthly_summary")
                     _populate_registry(employee_registry, monthly_summary, 'monthly_summary')
                     
                 if all_processed_data:         # calculate weekly
                     weekly_data_list = [d for d in all_processed_data if week_start <= getdate(d['date']) <= week_end]  # for all between range
                     if weekly_data_list:
-                        weekly_working_days = _get_working_days(week_start, week_end)
-                        weekly_summary = _create_period_summary(weekly_data_list, weekly_working_days, "weekly_summary")
+                        # weekly_working_days = _get_working_days(week_start, week_end)
+                        weekly_summary = _create_period_summary(weekly_data_list, working_day_counts["weekly"], "weekly_summary")
                         _populate_registry(employee_registry, weekly_summary, 'weekly_summary')
                     
                 if all_processed_data:         # calculate daily
@@ -321,11 +333,11 @@ def fetch_checkins(from_date=None, to_date=None, specific_date=None):
                         }
                 
                 # final output
+                if frappe.session.user=="Administrator":
+                    subordinates=[emp.name for emp in employee_details if emp.name!=user_id]
+                
                 return _structure_data_for_hierarchy(employee_registry, user_id, subordinates)
 
-            except frappe.db.Error as e:
-                frappe.log_error(f"Database error | User: {frappe.session.user} | Date: {specific_date} | Error: {str(e)}", "Specific_Date_DB_Error")
-                return {"error": "Database operation failed"}
             except Exception as e:
                 frappe.log_error(f"Specific date error | User: {frappe.session.user} | Date: {specific_date} | Error: {str(e)}", "Specific_Date_Error")
                 return {"error": "Failed to process request"}
