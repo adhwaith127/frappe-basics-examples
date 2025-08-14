@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Attendance Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS Variables for consistent theming */
+        :root {
+            --primary: #0c5054;
+            --primary-light: #e8f1fd;
+            --secondary: #afdde5;
+            --tertiary: #024950; 
+            --success: #28a745;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --border: #dee2e6;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+        }
+
+        /* Base body styling */
+        body {
+            background-color: #e2eaeb;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Main page container with responsive sizing */
+        .page-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            zoom: 0.8;
+        }
+
+        /* Dashboard header styling with gradient background */
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 10px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15), 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Equal height row for layout consistency */
+        .equal-height-row {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .equal-height-row .card-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        /* Card container styling with shadow effects */
+        .card-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: var(--transition);
+        }
+
+        .card-container:hover {
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Section title styling */
+        .section-title {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        /* Table container with rounded corners and shadow */
+        .table-container {
+            border-radius: 8px;
+            overflow-x: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Fixed table layout for consistent column widths */
+        .fixed-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .fixed-table th,
+        .fixed-table td {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* Column width definitions for attendance view */
+        .fixed-table.attendance-view th:nth-child(1) { width: 15%; } /* Employee Name */
+        .fixed-table.attendance-view th:nth-child(2) { width: 12%; } /* Department */
+        .fixed-table.attendance-view th:nth-child(3) { width: 12%; } /* Reports To */
+        .fixed-table.attendance-view th:nth-child(4) { width: 10%; } /* Status */
+        .fixed-table.attendance-view th:nth-child(5) { width: 10%; } /* First Checkin */
+        .fixed-table.attendance-view th:nth-child(6) { width: 10%; } /* Last Checkout */
+        .fixed-table.attendance-view th:nth-child(7) { width: 10%; } /* Work Time */
+        .fixed-table.attendance-view th:nth-child(8) { width: 10%; } /* Weekly Avg */
+        .fixed-table.attendance-view th:nth-child(9) { width: 10%; } /* Monthly Avg */
+        .fixed-table.attendance-view th:nth-child(10) { width: 7%; } /* Actions */
+
+        /* Column width definitions for overtime view */
+        .fixed-table.overtime-view th:nth-child(1) { width: 20%; } /* Employee Name */
+        .fixed-table.overtime-view th:nth-child(2) { width: 20%; } /* Department */
+        .fixed-table.overtime-view th:nth-child(3) { width: 20%; } /* Reports To */
+        .fixed-table.overtime-view th:nth-child(4) { width: 15%; } /* Check In */
+        .fixed-table.overtime-view th:nth-child(5) { width: 15%; } /* Check Out */
+        .fixed-table.overtime-view th:nth-child(6) { width: 15%; } /* Overtime */
+
+        /* Table header styling */
+        .table thead {
+            background: linear-gradient(to bottom, #f1f5f9, #e2e8f0);
+        }
+
+        .table th {
+            color: var(--dark);
+            font-weight: 600;
+            vertical-align: middle;
+            padding: 15px;
+        }
+
+        .table td {
+            vertical-align: middle;
+            padding: 12px 15px;
+        }
+
+        /* Table row styling with hover effects */
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(44, 111, 187, 0.03);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: var(--primary-light);
+        }
+
+        /* Button styling */
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .btn-primary:hover {
+            background: #888888;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Custom button styling */
+        .view-report {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .view-report:hover {
+            background: #0c595f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: white; 
+        }
+        
+        .more-button {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .more-button:hover {
+            background: #0c595f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: white; 
+        }
+
+        /* Toggle buttons for data view selection */
+        .data-view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-left: 30px;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--primary);
+            background: white;
+            color: var(--primary);
+            border-radius: 30px;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            font-weight: 500;
+            width: 200px;
+            height: 50px;
+        }
+
+        .toggle-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .toggle-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .toggle-btn.active:hover {
+            background: #0c595f;
+        }
+
+        /* Filters container styling */
+        .filters-container {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Date picker styling for admin reports section */
+        .date-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Form control styling */
+        .form-control, .form-select {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            transition: var(--transition);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(44, 111, 187, 0.25);
+        }
+
+        /* Search container with dropdown */
+        .search-container {
+            position: relative;
+            flex: 2;
+            min-width: 250px;
+        }
+
+        .dropdown-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            max-height: 280px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: var(--primary-light);
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Statistics card styling */
+        .stats-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+            border-left: 4px solid var(--primary);
+        }
+
+        .stats-label {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+
+        .stats-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Loading spinner animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 2.5rem;
+            height: 2.5rem;
+            border: 0.3rem solid rgba(44, 111, 187, 0.15);
+            border-right-color: var(--primary);
+            border-radius: 50%;
+            animation: spinner-border 0.75s linear infinite;
+        }
+
+        @keyframes spinner-border {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        /* Sort button styling */
+        .sort-btn {
+            background: transparent;
+            border: none;
+            padding: 0;
+            font-size: 0.9rem;
+            color: var(--secondary);
+            transition: var(--transition);
+        }
+
+        .sort-btn:hover {
+            color: var(--primary);
+        }
+
+        .table-overlay.loading::after {
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        .employee-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Modal styling */
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 0;
+        }
+
+        .modal-title {
+            font-weight: 500;
+        }
+
+        .modal-content {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .bg-gradient {
+            background: linear-gradient(to right, #0f766e, #155e75) !important;
+        }
+        
+        .rounded-xl {
+            border-radius: 14px;
+        }
+
+        /* Status badge styling */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-present {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-absent {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Attendance summary cards */
+        .attendance-summary {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .summary-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .present-number { color: #28a745; }
+        .absent-number { color: #dc3545; }
+        .total-number { color: var(--primary); }
+
+        /* Pagination styling */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .pagination-info {
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin-left: 12px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 12px;
+        }
+
+        .pagination-select {
+            min-width: 120px;
+        }
+
+        .pagination {
+            margin: 0;
+        }
+
+        .page-link {
+            color: var(--primary);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            transition: var(--transition);
+        }
+
+        .page-link:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .page-item.disabled .page-link {
+            color: #6c757d;
+            background-color: #fff;
+            border-color: var(--border);
+        }
+
+        .records-per-page {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--primary);
+        }
+
+        .error-message {
+            color: #dc3545;
+            text-align: center;
+            padding: 20px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+            pointer-events: none;
+        }
+
+        /* Hidden class for elements */
+        .hidden {
+            display: none;
+        }
+
+        /* Column hiding utility */
+        .hide-column {
+            display: none !important;
+        }
+
+        /* Session styling for attendance logs */
+        .session-group {
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .session-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            font-weight: 600;
+        }
+
+        .session-details {
+            background-color: var(--light);
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+
+        /* Responsive design for mobile devices */
+        @media (max-width: 768px) {
+            .filters-container {
+                flex-direction: column;
+            }
+            
+            .filter-group, .search-container {
+                width: 100%;
+                min-width: auto;
+            }
+            
+            .page-container {
+                padding: 15px;
+            }
+            
+            .card-container {
+                padding: 20px 15px;
+            }
+
+            .pagination-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .pagination-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .attendance-summary {
+                flex-direction: column;
+            }
+
+            .data-view-toggle {
+                margin-top: 10px;
+                margin-left: 0;
+            }
+
+            .date-picker-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <header class="bg-gradient border rounded-xl shadow-sm p-4 px-5 mb-6 d-flex justify-content-between align-items-center flex-wrap" style="background: linear-gradient(120deg, #0f766e, #155e75);">
+            <div class="d-flex flex-column">
+                <h2 class="text-white fw-bold mb-1" style="font-size: 1.6rem;">Attendance Dashboard</h2>
+                <small class="text-light" style="opacity: 0.85;">Track Employee Attendance and Performance</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-user-circle text-white me-2" style="font-size: 1.5rem;"></i>
+                <span class="text-white fw-semibold" id="current-user-name" style="font-size: 1rem;"></span>
+            </div>
+        </header>
+
+        <div class="attendance-summary">
+            <div class="summary-card" onclick="filterBySummary('total')">
+                <div class="summary-number total-number" id="total-employees">-</div>
+                <div class="summary-label">Total Employees</div>
+            </div>
+            <div class="summary-card" onclick="filterBySummary('present')">
+                <div class="summary-number present-number" id="present-count">-</div>
+                <div class="summary-label">Present Today</div>
+            </div>
+            <div class="summary-card" onclick="filterBySummary('absent')">
+                <div class="summary-number absent-number" id="absent-count">-</div>
+                <div class="summary-label">Absent Today</div>
+            </div>
+        </div>
+
+        <div class="row equal-height-row" style="margin-top: 20px;" id="manager-daily-section">
+            <div class="col-lg-8">
+                <div class="card-container">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-2 mt-1">
+                        <h5 class="section-title mb-3 mb-md-0">
+                            <span id="manager-title" style="font-size: 24px;"></span>
+                            <span style="font-size: 22px;" id="daily-summary-text-span"> - Daily Summary</span>
+                        </h5>
+                        <div class="d-flex align-items-center">
+                            <input type="date" id="date-picker-manager" name="date" class="form-control border border-primary" style="max-width: 200px;">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <i id="reset-to-today-manager" class="fa fa-refresh" style="font-size:24px; cursor: pointer;"></i>
+                        </div>
+                    </div>
+
+                    <div id="main-table-container" class="table-overlay">
+                        <div id="main-spinner" class="d-none spinner-container">
+                            <div class="loading-spinner"></div>
+                        </div>
+                        <div id="main-table" class="table-container" style="padding-top: 20px; margin-bottom: 40px !important;">
+                            <table class="table table-hover rounded-3" id="manager-daily-table">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="text-light" style="background-color: var(--primary); border-top-left-radius: 8px;">Employee Name</th>
+                                        <th class="text-light" style="background-color: var(--primary);">Department</th>
+                                        <th class="text-light" style="background-color: var(--primary);">Reports To</th>
+                                        <th class="text-light" style="background-color: var(--primary);">Status</th>
+                                        <th class="text-light" style="background-color: var(--primary);">Checkin</th>
+                                        <th class="text-light" style="background-color: var(--primary);">Checkout</th>
+                                        <th class="text-light" style="background-color: var(--primary); border-top-right-radius: 8px;">Work Time (hrs)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="main-data">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="performance-table" class="col-lg-4">
+                <div class="card-container w-100">
+                    <h4 class="section-title">Performance Overview</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="stats-card">
+                                <div class="stats-label" style="font-size: medium; color: var(--tertiary);"><i class="fas fa-clock me-1"></i> Today's Hours</div>
+                                <div class="stats-value" id="manager-today-hours">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stats-card">
+                                <div class="stats-label" style="font-size: medium; color: var(--tertiary);"><i class="fas fa-calendar-week me-1"></i> Weekly Average</div>
+                                <div class="stats-value" id="manager-weekly-hours">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stats-card">
+                                <div class="stats-label" style="font-size: medium; color: var(--tertiary);"><i class="fas fa-calendar-alt me-1"></i> Monthly Average</div>
+                                <div class="stats-value" id="manager-monthly-hours">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="reports-spinner" class="d-none spinner-container">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div id="report-container" class="card-container" style="margin-top: 20px;">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+                <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center">
+                    <h4 class="section-title mb-3 mb-md-0">Team Attendance Report</h4>
+                    <div class="data-view-toggle">
+                        <button class="toggle-btn active" id="attendance-toggle" onclick="toggleDataView('attendance')">
+                            <i class="fas fa-calendar-check me-1"></i> Daily Data
+                        </button>
+                        <button class="toggle-btn" id="overtime-toggle" onclick="toggleDataView('overtime')">
+                            <i class="fas fa-clock me-1"></i> Overtime Data
+                        </button>
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <button class="btn btn-outline-primary me-2" id="reset-filters">
+                        <i class="fas fa-sync-alt me-1"></i> Reset
+                    </button>
+                    <button class="btn btn-outline-primary me-2" onclick="showExportModal()" id="export-report">
+                        <i class="fas fa-file-export me-1"></i> Export Report
+                    </button>
+                </div>
+            </div>
+            
+            <div class="date-picker-container" id="admin-date-picker" style="display: none;">
+                <label class="filter-label" style="color: var(--tertiary);"><i class="fas fa-calendar me-1"></i> Select Date:</label>
+                <input type="date" id="date-picker-admin" name="date" class="form-control border border-primary" style="max-width: 200px;">
+                <i id="reset-to-today-admin" class="fa fa-refresh" style="font-size:24px; cursor: pointer; margin-left: 10px;"></i>
+            </div>
+            
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label class="filter-label" style="color: var(--tertiary);"><i class="fas fa-building me-1"></i> Department</label>
+                    <select class="form-control form-select" id="department-filter">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label" style="color: var(--tertiary);"><i class="fas fa-user-tie me-1"></i> Reports To</label>
+                    <select class="form-control form-select" id="reports-to-filter">
+                        <option value="">All Managers</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label" style="color: var(--tertiary);"><i class="fas fa-search me-1"></i> Search Employee</label>
+                    <div id="dropdown-container" class="search-container">
+                        <div class="position-relative" style="width: 100%;">
+                            <input class="form-control" id="dropdown-search" type="text" maxlength="50" style="width: 100%; padding-right: 35px;" placeholder="Enter employee name...">
+                            <i class="fas fa-search search-icon"></i>
+                            <div class="dropdown-options" id="dropdown-options">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-overlay">
+                <div class="table-container">
+                    <table class="table table-hover table-responsive fixed-table attendance-view" id="main-data-table">
+                        <thead>
+                            <tr>
+                                <th style="background-color: var(--primary);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-light">Employee Name</span>
+                                        <div class="sort-indicator" style="display: flex; flex-direction: column; align-items: center;">
+                                            <button class="sort-btn" onclick="sortData('employee', 'asc')">↑</button>
+                                            <button class="sort-btn" onclick="sortData('employee', 'desc')">↓</button>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th style="background-color: var(--primary);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-light">Department</span>
+                                        <div class="sort-indicator" style="display: flex; flex-direction: column; align-items: center;">
+                                            <button class="sort-btn" onclick="sortData('department', 'asc')">↑</button>
+                                            <button class="sort-btn" onclick="sortData('department', 'desc')">↓</button>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th style="background-color: var(--primary);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-light">Reports To</span>
+                                        <div class="sort-indicator" style="display: flex; flex-direction: column; align-items: center;">
+                                            <button class="sort-btn" onclick="sortData('reports_to', 'asc')">↑</button>
+                                            <button class="sort-btn" onclick="sortData('reports_to', 'desc')">↓</button>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th style="background-color: var(--primary);" id="status-th">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-light">Status</span>
+                                    </div>
+                                </th>
+                                <th style="background-color: var(--primary);" id="entry-time-th">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-light">Checkin</span>
+                                        <div class="sort-indicator" style="display: flex; flex-direction: column; align-items: center;">
+                                            <button class="sort-btn" onclick="sortData('entry_time', 'asc')">↑</button>
+                                            <button class="sort-btn" onclick="sortData('entry_time', 'desc')">↓</button>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th style="background-color: var(--primary);" id="exit-time-th">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-light me-2">Checkout</span>
+                                        <div class="sort-indicator" style="display: flex; flex-direction: column; align-items: center;">
+                                            <button class="sort-btn" onclick="sortData('exit_time', 'asc')">↑</button>
+                                            <button class="sort-btn" onclick="sortData('exit_time', 'desc')">↓</button>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th style="background-color: var(--primary);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-light me-2" id="work-time-header">Work Time (hrs)</span>
+                                        <div class="sort-indicator" style="display: flex; flex-direction: column; align-items: center;">
+                                            <button class="sort-btn" onclick="sortData('work_time', 'asc')">↑</button>
+                                            <button class="sort-btn" onclick="sortData('work_time', 'desc')">↓</button>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th style="background-color: var(--primary);" id="weekly-avg-th">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-light me-2">Weekly Average</span>
+                                        <div class="sort-indicator" style="display: flex; flex-direction: column; align-items: center;">
+                                            <button class="sort-btn" onclick="sortData('weekly_avg', 'asc')">↑</button>
+                                            <button class="sort-btn" onclick="sortData('weekly_avg', 'desc')">↓</button>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th style="background-color: var(--primary);" id="monthly-avg-th">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-light me-2">Monthly Average</span>
+                                        <div class="sort-indicator" style="display: flex; flex-direction: column; align-items: center;">
+                                            <button class="sort-btn" onclick="sortData('monthly_avg', 'asc')">↑</button>
+                                            <button class="sort-btn" onclick="sortData('monthly_avg', 'desc')">↓</button>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th style="background-color: var(--primary);" id="more-btn-th">
+                                    <span class="text-light">Action</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-data">
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            <span id="pagination-info">Showing 0 to 0 of 0 entries</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <div class="records-per-page">
+                                <label for="records-per-page-select">Show:</label>
+                                <select class="form-select form-select-sm pagination-select" id="records-per-page-select">
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span>entries</span>
+                            </div>
+                            
+                            <nav aria-label="Table pagination">
+                                <ul class="pagination pagination-sm" id="pagination-controls">
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="employeeDetailsModal" tabindex="-1" aria-labelledby="employeeDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="employeeDetailsModalLabel">
+                        <i class="fas fa-user-clock me-2"></i>Employee Attendance Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="employee-info mb-4">
+                        <h6 class="fw-bold text-primary" id="employee-modal-name">Employee Name</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">Department: </small>
+                                <span id="employee-modal-department">-</span>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Reports To: </small>
+                                <span id="employee-modal-reports">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="attendance-logs">
+                        <h6 class="mb-3">Check-in/Check-out Sessions:</h6>
+                        <div id="logs-container">
+                            </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exportModalLabel">
+                        <i class="fas fa-file-export me-2"></i>Export Attendance Report
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="exportForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="export-employee" class="form-label">
+                                        <i class="fas fa-user me-1"></i>Employee Name
+                                    </label>
+                                    <select class="form-select" id="export-employee">
+                                        <option value="">Select Employee (Optional)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="export-department" class="form-label">
+                                        <i class="fas fa-building me-1"></i>Department
+                                    </label>
+                                    <select class="form-select" id="export-department">
+                                        <option value="">Select Department (Optional)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="export-from-date" class="form-label">
+                                        <i class="fas fa-calendar me-1"></i>From Date <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" class="form-control" id="export-from-date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="export-to-date" class="form-label">
+                                        <i class="fas fa-calendar me-1"></i>To Date <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" class="form-control" id="export-to-date" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="processExport()">
+                        <i class="fas fa-download me-1"></i>Download Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        
+
+        // Pagination and data management variables
+        let currentPage = 1;
+        let recordsPerPage = 10;
+        let totalRecords = 0;
+        let allEmployeeData = [];
+        let filteredData = [];
+        let overtimeEmployeeData = [];
+        
+        // Date management
+        let currentDate = new Date().toISOString().split('T')[0];
+        
+        // API response data storage
+        let managerData = null;
+        let subordinatesData = {};
+        
+        // UI state management
+        let currentDataView = 'attendance'; // 'attendance' or 'overtime'
+        let isAdminUser = false;
+        let searchTimeout;
+        let activeSummaryFilter = 'total'; // 'total', 'present', 'absent'
+        
+        // API configuration
+        const baseUrl = window.location.origin;
+        const API_BASE_URL = `${baseUrl}/api/method/sil.test.api.fetch_checkins`;
+        const OVERTIME_API_URL = `${baseUrl}/api/method/sil.test.overtime.fetch_overtime`;
+        const EXPORT_API_URL = `${baseUrl}/api/method/sil.test.export.export_attendance`;
+      
+        // Initialize the dashboard when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDatePickers();
+            loadDashboardData();
+            setupEventListeners();
+            initializeExportDates();
+        });
+
+        // Initialize all date pickers with current date
+        function initializeDatePickers() {
+            const managerDatePicker = document.getElementById('date-picker-manager');
+            const adminDatePicker = document.getElementById('date-picker-admin');
+            
+            if (managerDatePicker) {
+                managerDatePicker.value = currentDate;
+                managerDatePicker.setAttribute("max", currentDate);
+            }
+            
+            if (adminDatePicker) {
+                adminDatePicker.value = currentDate;
+                adminDatePicker.setAttribute("max", currentDate);
+            }
+        }
+
+        // Set up all event listeners for interactive elements
+        function setupEventListeners() {
+            // Date picker event listeners
+            const managerDatePicker = document.getElementById('date-picker-manager');
+            const adminDatePicker = document.getElementById('date-picker-admin');
+            const resetManagerBtn = document.getElementById('reset-to-today-manager');
+            const resetAdminBtn = document.getElementById('reset-to-today-admin');
+            
+            if (managerDatePicker) managerDatePicker.addEventListener('change', handleDateChange);
+            if (adminDatePicker) adminDatePicker.addEventListener('change', handleDateChange);
+            if (resetManagerBtn) resetManagerBtn.addEventListener('click', handleRefresh);
+            if (resetAdminBtn) resetAdminBtn.addEventListener('click', handleRefresh);
+            
+            // Filter and search event listeners
+            document.getElementById('records-per-page-select').addEventListener('change', changeRecordsPerPage);
+            document.getElementById('department-filter').addEventListener('change', handleDepartmentFilter);
+            document.getElementById('reports-to-filter').addEventListener('change', handleReportsToFilter);
+            document.getElementById('dropdown-search').addEventListener('input', handleSearchInput);
+            document.getElementById('dropdown-search').addEventListener('focus', showEmployeeDropdown);
+            document.getElementById('dropdown-search').addEventListener('blur', () => setTimeout(hideEmployeeDropdown, 150));
+            document.getElementById('reset-filters').addEventListener('click', resetFilters);
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                const searchContainer = document.getElementById('dropdown-container');
+                if (!searchContainer.contains(event.target)) {
+                    hideEmployeeDropdown();
+                }
+            });
+        }
+
+        // Initialize export modal with no default dates
+        function initializeExportDates() {
+            // Remove default date initialization - let user select dates
+ 
+            const fromDateInput = document.getElementById('export-from-date');
+            const toDateInput = document.getElementById('export-to-date');
+
+            // Set max date to today for both inputs
+            const today = new Date().toISOString().split('T')[0];
+            fromDateInput.setAttribute('max', today);
+            toDateInput.setAttribute('max', today);
+        }
+
+        
+        // Handle date change from either date picker
+        function handleDateChange(event) {
+            currentDate = event.target.value;
+            // Sync both date pickers
+            const managerPicker = document.getElementById('date-picker-manager');
+            const adminPicker = document.getElementById('date-picker-admin');
+            if (managerPicker) managerPicker.value = currentDate;
+            if (adminPicker) adminPicker.value = currentDate;
+            loadDashboardData();
+        }
+        
+        // Reset date to today
+        function handleRefresh() {
+            const today = new Date().toISOString().split('T')[0];
+            currentDate = today;
+            const managerPicker = document.getElementById('date-picker-manager');
+            const adminPicker = document.getElementById('date-picker-admin');
+            if (managerPicker) managerPicker.value = today;
+            if (adminPicker) adminPicker.value = today;
+            loadDashboardData();
+        }
+
+
+        // Show loading spinner for specific container
+        function showLoading(containerId) {
+            const spinnerId = containerId.replace('-container', '-spinner');
+            document.getElementById(spinnerId)?.classList.remove('d-none');
+            document.getElementById(containerId)?.classList.add('d-none');
+        }
+
+        // Hide loading spinner and show content
+        function hideLoading(containerId) {
+            const spinnerId = containerId.replace('-container', '-spinner');
+            document.getElementById(spinnerId)?.classList.add('d-none');
+            document.getElementById(containerId)?.classList.remove('d-none');
+        }
+
+
+        // Main function to load all dashboard data
+        async function loadDashboardData() {
+            showLoading('main-table-container');
+            document.getElementById('reports-spinner').classList.remove('d-none');
+            
+            // Reset overtime data on each full load to ensure it's fresh for the new date
+            overtimeEmployeeData = [];
+            
+            try {
+                // Load main attendance data which is the source of truth for all employees
+                const attendanceResponse = await fetchAttendanceData(currentDate);
+                
+                if (attendanceResponse && !attendanceResponse.error) {
+                    processApiResponse(attendanceResponse);
+                    
+                    // Conditionally load overtime data if the view is already set to overtime
+                    if (currentDataView === 'overtime') {
+                        const overtimeResponse = await fetchOvertimeData(currentDate);
+                        if (overtimeResponse && !overtimeResponse.error) {
+                            processOvertimeResponse(overtimeResponse);
+                        }
+                    }
+                    
+                    updateDashboard();
+                    updateUserInterface();
+                    populateEmployeeData(); // This will apply filters and display data
+                    populateFilterDropdowns();
+                    populateExportModal();
+                } else {
+                    const errorMessage = attendanceResponse?.error || 'Failed to load attendance data. Please try again.';
+                    console.error('Failed to load dashboard data:', errorMessage);
+                    showErrorMessage(errorMessage);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showErrorMessage('An unexpected error occurred. Please try again.');
+            } finally {
+                hideLoading('main-table-container');
+                document.getElementById('reports-spinner').classList.add('d-none');
+            }
+        }
+
+        // Fetch attendance data from API with timeout and error handling
+        async function fetchAttendanceData(date) {
+            const url = new URL(API_BASE_URL);
+            url.searchParams.append("specific_date", date);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15-second timeout
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                return data.message || data;
+
+            } catch (error) {
+                console.error('API call failed:', error);
+                if (error.name === 'AbortError') {
+                    return { error: 'Request timeout. The server is taking too long to respond.' };
+                }
+                if (error.message.includes('Failed to fetch')) {
+                    return { error: 'Cannot connect to the server. Please check your network connection or if the server is running.' };
+                }
+                return { error: `An error occurred: ${error.message}` };
+            }
+        }
+
+        // Fetch overtime data from API
+        async function fetchOvertimeData(date) {
+            const url = new URL(OVERTIME_API_URL);
+            // The python script expects 'ot_date' as the parameter name
+            url.searchParams.append("ot_date", date);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                return data.message || data;
+
+            } catch (error) {
+                console.error('Overtime API call failed:', error);
+                if (error.name === 'AbortError') {
+                    return { error: 'Request timeout. The server is taking too long to respond.' };
+                }
+                return { error: `An error occurred: ${error.message}` };
+            }
+        }
+
+        // Process the API response and extract relevant data
+        function processApiResponse(response) {
+            isAdminUser = response.user_id === "Administrator";
+            managerData = response.manager_data || null;
+            subordinatesData = response.subordinates_data || {};
+            
+            // Transform subordinates data into employee records array
+            allEmployeeData = Object.keys(subordinatesData).map(empId => {
+                const empData = subordinatesData[empId];
+                return empData && empData.employee_info ? createEmployeeRecord(empData, empId) : null;
+            }).filter(Boolean); // Filter out any null entries
+            
+            // Sort employees by name for consistent display
+            allEmployeeData.sort((a, b) => a.employee.localeCompare(b.employee));
+        }
+
+        // Process overtime API response, which returns a list of employees
+        function processOvertimeResponse(response) {
+            const rawOvertimeList = Array.isArray(response) ? response : [];
+            
+            overtimeEmployeeData = rawOvertimeList.map(ot_record => {
+                // The API response for overtime does not contain an employee ID.
+                // We find the corresponding employee from our main data source `allEmployeeData`
+                // by matching the employee name. This ensures data integrity.
+                const masterRecord = allEmployeeData.find(emp => emp.employee === ot_record.employee_name);
+                
+                const empId = masterRecord ? masterRecord.id : ot_record.employee_name; // Use name as fallback ID
+                
+                return createOvertimeRecord(ot_record, empId);
+
+            }).filter(Boolean);
+            
+            overtimeEmployeeData.sort((a, b) => a.employee.localeCompare(b.employee));
+        }
+
+
+        // Create a standardized employee record from API data
+        function createEmployeeRecord(empData, empId) {
+            const empInfo = empData?.employee_info || {};
+            const dailyData = empData?.daily_data || {};
+            const overtimeData = empData?.overtime_data || {};
+            const weeklyData = empData?.weekly_summary || {};
+            const monthlyData = empData?.monthly_summary || {};
+
+            return {
+                id: empId,
+                employee: empInfo.name || empId,
+                department: empInfo.department || 'Unknown',
+                reports_to: empInfo.reports_to || 'N/A',
+                status: dailyData.status || 'Unknown',
+                entry_time: dailyData.entry_time || '-',
+                exit_time: dailyData.exit_time || '-',
+                work_time: dailyData.work_time || 0,
+                overtime_hours: overtimeData.overtime_hours || 0,
+                weekly_avg: weeklyData.average_work_hours || 0,
+                monthly_avg: monthlyData.average_work_hours || 0,
+                checkin_pairs: dailyData.checkin_pairs || [], // Store checkin pairs for modal
+                raw_data: empData // Store original data for detailed views
+            };
+        }
+
+        // Create overtime record from API data with corrected field names
+        function createOvertimeRecord(empData, empId) {
+            // empData is one object from the python script's response list.
+            return {
+                id: empId,
+                employee: empData.employee_name || empId,
+                department: empData.department || 'Unknown',
+                reports_to: empData.reports_to || 'N/A',
+                entry_time: empData.first_in || '-',      // Mapped from 'first_in'
+                exit_time: empData.last_out || '-',       // Mapped from 'last_out'
+                overtime_hours: empData.total_overtime || 0 // Mapped from 'total_overtime'
+            };
+        }
+        
+        // Update summary cards and manager performance data
+        function updateDashboard() {
+            const totalEmployees = allEmployeeData.length;
+            const presentCount = allEmployeeData.filter(emp => emp.status === 'Present').length;
+            const absentCount = totalEmployees - presentCount;
+            
+            // Update summary cards
+            document.getElementById('total-employees').textContent = totalEmployees;
+            document.getElementById('present-count').textContent = presentCount;
+            document.getElementById('absent-count').textContent = absentCount;
+            
+            // Update manager performance data if available
+            if (!isAdminUser && managerData) {
+                document.getElementById('manager-today-hours').textContent = formatHours(managerData.daily_data?.work_time);
+                document.getElementById('manager-weekly-hours').textContent = formatHours(managerData.weekly_summary?.average_work_hours);
+                document.getElementById('manager-monthly-hours').textContent = formatHours(managerData.monthly_summary?.average_work_hours);
+            }
+        }
+
+        // Update user interface based on user role (admin vs manager)
+        function updateUserInterface() {
+            const currentUserName = isAdminUser ? 'Administrator' : (managerData?.employee_info?.name || 'Manager');
+            document.getElementById('current-user-name').textContent = currentUserName;
+            document.getElementById('manager-title').textContent = currentUserName;
+            
+            // Show/hide sections based on user role
+            const managerDailySection = document.getElementById("manager-daily-section");
+            const adminDatePicker = document.getElementById("admin-date-picker");
+            
+            if (isAdminUser) {
+                managerDailySection.style.display = 'none';
+                adminDatePicker.style.display = 'flex';
+            } else {
+                managerDailySection.style.display = 'flex';
+                adminDatePicker.style.display = 'none';
+                populateManagerTable();
+            }
+        }
+
+        // Populate the manager's personal attendance table
+        function populateManagerTable() {
+            const tbody = document.getElementById('main-data');
+            tbody.innerHTML = '';
+            
+            if (!managerData || !managerData.employee_info || isAdminUser) return;
+
+            const managerRecord = createEmployeeRecord(managerData, 'MANAGER');
+            if (!managerRecord) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">Unable to load manager data.</td></tr>';
+                return;
+            }
+
+            const statusBadge = managerRecord.status === 'Present' 
+                ? '<span class="status-badge status-present">Present</span>' 
+                : '<span class="status-badge status-absent">Absent</span>';
+
+            const row = `
+                <tr>
+                    <td class="employee-name">${managerRecord.employee}</td>
+                    <td>${managerRecord.department}</td>
+                    <td>${managerRecord.reports_to}</td>
+                    <td>${statusBadge}</td>
+                    <td>${managerRecord.entry_time}</td>
+                    <td>${managerRecord.exit_time}</td>
+                    <td>${(managerRecord.work_time || 0).toFixed(2)}</td>
+                </tr>`;
+            tbody.innerHTML = row;
+        }
+
+        // Format hours for display (show '-' for zero or invalid values)
+        function formatHours(hours) {
+            return (typeof hours === 'number' && hours > 0) ? hours.toFixed(1) : '-';
+        }
+        
+        // Filter data based on summary card clicks
+        function filterBySummary(filterType) {
+            activeSummaryFilter = filterType;
+            
+            // Reset other filters
+            document.getElementById('department-filter').value = '';
+            document.getElementById('reports-to-filter').value = '';
+            document.getElementById('dropdown-search').value = '';
+            
+            // Apply summary filter
+            if (filterType === 'total') {
+                filteredData = [...getCurrentDataSource()];
+            } else if (filterType === 'present') {
+                // Summary filters only apply to attendance view
+                if (currentDataView === 'attendance') {
+                    filteredData = getCurrentDataSource().filter(emp => emp.status === 'Present');
+                } else {
+                    filteredData = [...getCurrentDataSource()];
+                }
+            } else if (filterType === 'absent') {
+                 // Summary filters only apply to attendance view
+                if (currentDataView === 'attendance') {
+                    filteredData = getCurrentDataSource().filter(emp => emp.status === 'Absent');
+                } else {
+                     filteredData = [...getCurrentDataSource()];
+                }
+            }
+            
+            totalRecords = filteredData.length;
+            currentPage = 1;
+            displayCurrentPage();
+            updatePaginationInfo();
+            generatePaginationControls();
+            populateFilterDropdowns();
+        }
+
+        // Get current data source based on view
+        function getCurrentDataSource() {
+            return currentDataView === 'overtime' ? overtimeEmployeeData : allEmployeeData;
+        }
+
+        
+        // DATA VIEW TOGGLE FUNCTIONALITY
+        
+        
+        // Toggle between attendance and overtime data views
+        async function toggleDataView(viewType) {
+            currentDataView = viewType;
+            
+            // Update toggle button states
+            document.getElementById('attendance-toggle').classList.toggle('active', viewType === 'attendance');
+            document.getElementById('overtime-toggle').classList.toggle('active', viewType === 'overtime');
+            
+            // Show loading for overtime data if not loaded yet for the current date
+            if (viewType === 'overtime' && overtimeEmployeeData.length === 0) {
+                document.getElementById('reports-spinner').classList.remove('d-none');
+                
+                try {
+                    const overtimeResponse = await fetchOvertimeData(currentDate);
+                    if (overtimeResponse && !overtimeResponse.error) {
+                        processOvertimeResponse(overtimeResponse);
+                    } else {
+                        console.error("Error fetching overtime data:", overtimeResponse.error);
+                        showErrorMessage(overtimeResponse.error || "Could not fetch overtime data.");
+                    }
+                } catch (error) {
+                    console.error('Error loading overtime data:', error);
+                    showErrorMessage("An error occurred while fetching overtime data.");
+                } finally {
+                    document.getElementById('reports-spinner').classList.add('d-none');
+                }
+            }
+            
+            updateTableLayout(viewType);
+            populateEmployeeData();
+        }
+
+        // Update table layout and column visibility based on view type
+        function updateTableLayout(viewType) {
+            const table = document.getElementById('main-data-table');
+            const workTimeHeader = document.getElementById('work-time-header');
+            const weeklyAvgHeader = document.getElementById('weekly-avg-th');
+            const monthlyAvgHeader = document.getElementById('monthly-avg-th');
+            const statusTh = document.getElementById('status-th');
+            const actionsTh = document.getElementById('more-btn-th');
+            const entryTimeTh = document.getElementById('entry-time-th').querySelector('span');
+            const exitTimeTh = document.getElementById('exit-time-th').querySelector('span');
+            
+            const isAttendanceView = viewType === 'attendance';
+            
+            // Update table classes for proper column widths
+            table.className = isAttendanceView 
+                ? 'table table-hover table-responsive fixed-table attendance-view'
+                : 'table table-hover table-responsive fixed-table overtime-view';
+            
+            // Update header text and show/hide columns based on view
+            workTimeHeader.textContent = isAttendanceView ? 'Work Time (hrs)' : 'Overtime (hrs)';
+            entryTimeTh.textContent = isAttendanceView ? 'Checkin' : 'Check In';
+            exitTimeTh.textContent = isAttendanceView ? 'Checkout' : 'Check Out';
+
+            weeklyAvgHeader.classList.toggle('hide-column', !isAttendanceView);
+            monthlyAvgHeader.classList.toggle('hide-column', !isAttendanceView);
+            statusTh.classList.toggle('hide-column', !isAttendanceView);
+            actionsTh.classList.toggle('hide-column', !isAttendanceView);
+            
+            // The sortData function needs to know which field to sort by for work time/overtime
+            const workTimeSortButtons = document.getElementById('work-time-header').parentElement.querySelectorAll('.sort-btn');
+            workTimeSortButtons[0].setAttribute('onclick', isAttendanceView ? "sortData('work_time', 'asc')" : "sortData('overtime_hours', 'asc')");
+            workTimeSortButtons[1].setAttribute('onclick', isAttendanceView ? "sortData('work_time', 'desc')" : "sortData('overtime_hours', 'desc')");
+
+            displayCurrentPage();
+        }
+
+        
+        // EMPLOYEE DATA MANAGEMENT
+        
+        
+        // Initialize employee data display and pagination
+        function populateEmployeeData() {
+            const dataSource = getCurrentDataSource();
+            filteredData = [...dataSource];
+            totalRecords = filteredData.length;
+            currentPage = 1;
+            // Apply any active filters before displaying
+            applyFilters();
+        }
+
+        // Populate filter dropdown options
+        function populateFilterDropdowns() {
+            const dataSource = getCurrentDataSource();
+            if (dataSource.length === 0) return;
+
+            // Extract unique departments and managers, sort alphabetically
+            const departments = [...new Set(dataSource.map(emp => emp.department).filter(Boolean))].sort();
+            const reportsTo = [...new Set(dataSource.map(emp => emp.reports_to).filter(m => m && m !== 'N/A'))].sort();
+
+            const departmentSelect = document.getElementById('department-filter');
+            const reportsToSelect = document.getElementById('reports-to-filter');
+
+            // Clear existing options but save current selections
+            const currentDept = departmentSelect.value;
+            const currentManager = reportsToSelect.value;
+            departmentSelect.innerHTML = '<option value="">All Departments</option>';
+            reportsToSelect.innerHTML = '<option value="">All Managers</option>';
+
+            // Add department options
+            departments.forEach(dept => {
+                departmentSelect.add(new Option(dept, dept));
+            });
+            
+            // Add manager options
+            reportsTo.forEach(manager => {
+                reportsToSelect.add(new Option(manager, manager));
+            });
+            
+            // Restore selections if they still exist
+            if (departments.includes(currentDept)) departmentSelect.value = currentDept;
+            if (reportsTo.includes(currentManager)) reportsToSelect.value = currentManager;
+        }
+
+        // Populate export modal dropdowns with employee and department data
+        function populateExportModal() {
+            if (allEmployeeData.length === 0) return;
+            
+            const employees = [...allEmployeeData].sort((a, b) => a.employee.localeCompare(b.employee));
+            const departments = [...new Set(allEmployeeData.map(emp => emp.department).filter(Boolean))].sort();
+
+            const employeeSelect = document.getElementById('export-employee');
+            const departmentSelect = document.getElementById('export-department');
+
+            employeeSelect.innerHTML = '<option value="">Select Employee (Optional)</option>';
+            departmentSelect.innerHTML = '<option value="">Select Department (Optional)</option>';
+            
+            employees.forEach(emp => {
+                employeeSelect.add(new Option(emp.employee, emp.id));
+            });
+            departments.forEach(dept => {
+                departmentSelect.add(new Option(dept, dept));
+            });
+        }
+        
+        // Show detailed employee attendance logs in modal
+        function showEmployeeDetails(employeeId) {
+            const employee = allEmployeeData.find(emp => emp.id === employeeId);
+            if (!employee) {
+                console.error('Employee not found:', employeeId);
+                return;
+            }
+
+            // Update modal header with employee info
+            document.getElementById('employee-modal-name').textContent = employee.employee;
+            document.getElementById('employee-modal-department').textContent = employee.department;
+            document.getElementById('employee-modal-reports').textContent = employee.reports_to;
+
+            // Display checkin pairs as table
+            const logsContainer = document.getElementById('logs-container');
+            displayCheckinPairs(employee, logsContainer);
+
+            // Show the modal
+            const modal = new bootstrap.Modal(document.getElementById('employeeDetailsModal'));
+            modal.show();
+        }
+
+        // Display checkin pairs in a table format
+        function displayCheckinPairs(employee, container) {
+            const checkinPairs = employee.checkin_pairs || [];
+
+            if (checkinPairs.length > 0) {
+                let tableHtml = `
+                    <table class="table table-striped table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Session</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Duration (hrs)</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                let totalHours = 0;
+                checkinPairs.forEach((pair, index) => {
+                    const sessionNumber = index + 1;
+                    const checkIn = pair.in_time || '-';
+                    const checkOut = pair.out_time || '-';
+                    const duration = pair.duration ?? 0;
+                    totalHours += duration || 0;
+
+                    tableHtml += `
+                        <tr>
+                            <td><strong>Session ${sessionNumber}</strong></td>
+                            <td>${checkIn}</td>
+                            <td>${checkOut}</td>
+                            <td>${duration ? duration.toFixed(2) : '0.00'}</td>
+                        </tr>`;
+                });
+
+                tableHtml += `
+                        <tr class="table-info">
+                            <td><strong>Total</strong></td>
+                            <td colspan="2"><strong>Total Work Time</strong></td>
+                            <td><strong>${totalHours.toFixed(2)}</strong></td>
+                        </tr>`;
+                tableHtml += `</tbody></table>`;
+                container.innerHTML = tableHtml;
+            } else {
+                container.innerHTML = '<p class="text-muted">No check-in/check-out data available for this date.</p>';
+            }
+        }
+
+
+        // Show export modal
+        function showExportModal() {
+            const exportEmp=document.getElementById('export-employee')
+            const exportDept=document.getElementById('export-department')
+            const fromDateInput = document.getElementById('export-from-date');
+            const toDateInput = document.getElementById('export-to-date');
+            
+            exportEmp.value=""
+            exportDept.value=""
+            fromDateInput.value=""
+            toDateInput.value=""
+
+            const modal = new bootstrap.Modal(document.getElementById('exportModal'));
+            modal.show();
+        }
+
+        // Auto-populate department when employee is selected
+        document.getElementById('export-employee').addEventListener('change', function(event) {
+            let modalEmp = event.target.value;
+            const modalDept = document.getElementById('export-department');
+
+            if (modalEmp === "") {
+                // If the default/empty option is selected, reset the department field
+                modalDept.value = '';
+                modalDept.style.pointerEvents = 'auto'; // Re-enable clicks
+                modalDept.style.backgroundColor = ''; // Remove disabled styling
+                modalDept.readOnly = false; // Make sure it's not read-only
+            } else {
+                // Find the employee if a valid ID is selected
+                const emp = allEmployeeData.find(e => e.id === modalEmp);
+                if (emp) {
+                    modalDept.value = emp.department || '';
+                    modalDept.style.pointerEvents = 'none'; // Disable clicks
+                    modalDept.style.backgroundColor = '#e9ecef'; // Add disabled styling
+                    modalDept.readOnly = true; // Make it read-only
+                }
+            }
+        });
+
+        // Process export form and call backend API
+        function processExport() {
+            const employeeId = document.getElementById('export-employee').value;
+            const department = document.getElementById('export-department').value;
+            const fromDate = document.getElementById('export-from-date').value;
+            const toDate = document.getElementById('export-to-date').value;
+
+            // Validate required fields
+            if (!fromDate || !toDate) {
+                alert('Please select both From Date and To Date.');
+                return;
+            }
+            if (new Date(fromDate) > new Date(toDate)) {
+                alert('The "From" date cannot be later than the "To" date.');
+                return;
+            }
+
+            // Call backend export API
+            exportAttendanceReport(employeeId, department, fromDate, toDate);
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('exportModal'));
+            modal.hide();
+        }
+
+        // Call backend export API
+        async function exportAttendanceReport(employeeId, department, fromDate, toDate) {
+            const url = new URL(EXPORT_API_URL);
+            const params = {
+                start: fromDate,
+                end: toDate
+            };
+            
+            if (employeeId) params.emp = employeeId;
+            if (department) params.dept = department;
+            
+            Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/octet-stream'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                // Create download link
+                const blob = await response.blob();
+                const downloadUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', downloadUrl);
+                
+                // Generate filename
+                const filename = `attendance_report_${fromDate}_to_${toDate}.csv`;
+                link.setAttribute('download', filename);
+                
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                URL.revokeObjectURL(downloadUrl);
+                
+            } catch (error) {
+                console.error('Export failed:', error);
+                alert('Failed to export report. Please try again.');
+            }
+        }
+
+        
+        // Handle department filter changes
+        function handleDepartmentFilter() {
+            const departmentValue = document.getElementById('department-filter').value;
+
+            // When department changes, refresh Reports To list
+            if (departmentValue) {
+                updateReportsToDropdown(departmentValue);
+            } else {
+                // Show all managers when no department selected
+                updateReportsToDropdown('');
+            }
+
+            // Reset Reports To selection whenever department changes
+            document.getElementById('reports-to-filter').value = '';
+
+            applyFilters();
+        }
+
+        // Handle reports-to filter changes  
+        function handleReportsToFilter() {
+            applyFilters();
+        }
+
+        // Handle search input with debouncing
+        function handleSearchInput() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                applyFilters();
+                showEmployeeDropdown();
+            }, 300); // 300ms debounce
+        }
+        
+        // Update employee dropdown based on current filters
+        function updateEmployeeDropdown() {
+            const dropdownOptions = document.getElementById("dropdown-options");
+            dropdownOptions.innerHTML = "";
+
+            const availableEmployees = filteredData.sort((a, b) => a.employee.localeCompare(b.employee));
+
+            if (availableEmployees.length === 0) {
+                dropdownOptions.innerHTML = '<div class="dropdown-item text-muted">No employees match filters</div>';
+            } else {
+                availableEmployees.forEach(employee => {
+                    const option = document.createElement('div');
+                    option.className = 'dropdown-item';
+                    option.textContent = employee.employee;
+                    option.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        selectEmployee(employee.employee);
+                    });
+                    dropdownOptions.appendChild(option);
+                });
+            }
+        }
+
+        // Show employee dropdown with search filtering
+        function showEmployeeDropdown() {
+            updateEmployeeDropdown();
+            const searchValue = document.getElementById('dropdown-search').value.toLowerCase();
+            const items = document.querySelectorAll('#dropdown-options .dropdown-item');
+            let hasVisibleItems = false;
+            
+            items.forEach(item => {
+                const isVisible = item.textContent.toLowerCase().includes(searchValue);
+                item.style.display = isVisible ? '' : 'none';
+                if (isVisible) hasVisibleItems = true;
+            });
+            
+            document.getElementById('dropdown-options').style.display = hasVisibleItems ? 'block' : 'none';
+        }
+
+        // Hide employee dropdown
+        function hideEmployeeDropdown() {
+            document.getElementById('dropdown-options').style.display = 'none';
+        }
+
+        // Select employee from dropdown
+        function selectEmployee(employeeName) {
+            document.getElementById('dropdown-search').value = employeeName;
+            hideEmployeeDropdown();
+            applyFilters();
+        }
+
+        // Apply all active filters to the data
+        function applyFilters() {
+            const departmentFilter = document.getElementById('department-filter').value;
+            const reportsToFilter = document.getElementById('reports-to-filter').value;
+            const searchFilter = document.getElementById('dropdown-search').value.toLowerCase();
+            
+            const dataSource = getCurrentDataSource();
+
+            filteredData = dataSource.filter(employee => {
+                const matchesDepartment = !departmentFilter || employee.department === departmentFilter;
+                const matchesReportsTo = !reportsToFilter || employee.reports_to === reportsToFilter;
+                const matchesSearch = !searchFilter || employee.employee.toLowerCase().includes(searchFilter);
+                
+                // Summary filters (present/absent) only apply to attendance view
+                let matchesSummary = true;
+                if (currentDataView === 'attendance') {
+                    if (activeSummaryFilter === 'present') {
+                        matchesSummary = employee.status === 'Present';
+                    } else if (activeSummaryFilter === 'absent') {
+                        matchesSummary = employee.status === 'Absent';
+                    }
+                }
+                
+                return matchesDepartment && matchesReportsTo && matchesSearch && matchesSummary;
+            });
+
+            totalRecords = filteredData.length;
+            currentPage = 1;
+            displayCurrentPage();
+            updatePaginationInfo();
+            generatePaginationControls();
+        }
+
+        // Update reports-to dropdown based on selected department
+        function updateReportsToDropdown(selectedDepartment) {
+            const reportsToSelect = document.getElementById('reports-to-filter');
+            const currentValue = reportsToSelect.value;
+            
+            const dataSource = getCurrentDataSource();
+            
+            // Get managers for the selected department
+            const managersInDept = [...new Set(
+                dataSource
+                    .filter(emp => !selectedDepartment || emp.department === selectedDepartment)
+                    .map(emp => emp.reports_to)
+                    .filter(m => m && m !== 'N/A')
+            )].sort();
+            
+            reportsToSelect.innerHTML = '<option value="">All Managers</option>';
+            managersInDept.forEach(manager => {
+                reportsToSelect.add(new Option(manager, manager));
+            });
+            
+            // Restore previous value if it exists in the new list
+            if (currentValue && managersInDept.includes(currentValue)) {
+                reportsToSelect.value = currentValue;
+            }
+        }
+
+        // Reset all filters to default state
+        function resetFilters() {
+            document.getElementById('department-filter').value = '';
+            document.getElementById('reports-to-filter').value = '';
+            document.getElementById('dropdown-search').value = '';
+            activeSummaryFilter = 'total';
+            populateFilterDropdowns(); // Reset dropdown options
+            applyFilters();
+        }        
+        
+        // Display current page data in the table
+        function displayCurrentPage() {
+            const start = (currentPage - 1) * recordsPerPage;
+            const end = start + recordsPerPage;
+            const pageData = filteredData.slice(start, end);
+            const tbody = document.getElementById('reports-data');
+            
+            tbody.innerHTML = ''; // Clear previous data
+            
+            if (pageData.length === 0) {
+                const colspan = currentDataView === 'attendance' ? '10' : '6';
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="text-center">No matching records found.</td></tr>`;
+                return;
+            }
+            
+            const isAttendanceView = currentDataView === 'attendance';
+            
+            // Generate table rows based on current view mode
+            const allRowsHTML = pageData.map(employee => {
+                if (isAttendanceView) {
+                    return generateAttendanceRow(employee);
+                } else {
+                    return generateOvertimeRow(employee);
+                }
+            }).join('');
+            
+            tbody.innerHTML = allRowsHTML;
+        }
+
+        // Generate attendance view row
+        function generateAttendanceRow(employee) {
+            const statusBadge = employee.status === 'Present' 
+                ? '<span class="status-badge status-present">Present</span>' 
+                : '<span class="status-badge status-absent">Absent</span>';
+            
+            return `
+                <tr>
+                    <td class="employee-name">${employee.employee}</td>
+                    <td>${employee.department}</td>
+                    <td>${employee.reports_to}</td>
+                    <td>${statusBadge}</td>
+                    <td>${employee.entry_time}</td>
+                    <td>${employee.exit_time}</td>
+                    <td>${(employee.work_time || 0).toFixed(2)}</td>
+                    <td>${formatHours(employee.weekly_avg)}</td>
+                    <td>${formatHours(employee.monthly_avg)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary more-button" onclick="showEmployeeDetails('${employee.id}')">
+                            <i class="fas fa-eye me-1"></i>More
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Generate overtime view row
+        function generateOvertimeRow(employee) {
+            return `
+                <tr>
+                    <td class="employee-name">${employee.employee}</td>
+                    <td>${employee.department}</td>
+                    <td>${employee.reports_to}</td>
+                    <td>${employee.entry_time}</td>
+                    <td>${employee.exit_time}</td>
+                    <td>${(employee.overtime_hours || 0)}</td>
+                </tr>
+            `;
+        }
+
+        // Update pagination information display
+        function updatePaginationInfo() {
+            const start = totalRecords > 0 ? (currentPage - 1) * recordsPerPage + 1 : 0;
+            const end = Math.min(currentPage * recordsPerPage, totalRecords);
+            document.getElementById('pagination-info').textContent = `Showing ${start} to ${end} of ${totalRecords} entries`;
+        }
+
+        // Generate pagination control buttons
+        function generatePaginationControls() {
+            const totalPages = Math.ceil(totalRecords / recordsPerPage);
+            const paginationContainer = document.getElementById('pagination-controls');
+            
+            if (totalPages <= 1) {
+                paginationContainer.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <button class="page-link" onclick="goToPage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>
+                </li>`;
+            
+            // Calculate page range to show
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            // Add first page and ellipsis if needed
+            if (startPage > 1) paginationHTML += `<li class="page-item"><button class="page-link" onclick="goToPage(1)">1</button></li>`;
+            if (startPage > 2) paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+
+            // Add page numbers around current page
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `<li class="page-item ${i === currentPage ? 'active' : ''}"><button class="page-link" onclick="goToPage(${i})">${i}</button></li>`;
+            }
+
+            // Add last page and ellipsis if needed
+            if (endPage < totalPages - 1) paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            if (endPage < totalPages) paginationHTML += `<li class="page-item"><button class="page-link" onclick="goToPage(${totalPages})">${totalPages}</button></li>`;
+
+            paginationHTML += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <button class="page-link" onclick="goToPage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>
+                </li>`;
+            
+            paginationContainer.innerHTML = paginationHTML;
+        }
+
+        // Navigate to specific page
+        function goToPage(page) {
+            const totalPages = Math.ceil(totalRecords / recordsPerPage);
+            if (page >= 1 && page <= totalPages && page !== currentPage) {
+                currentPage = page;
+                displayCurrentPage();
+                updatePaginationInfo();
+                generatePaginationControls();
+            }
+        }
+
+        // Change number of records displayed per page
+        function changeRecordsPerPage() {
+            recordsPerPage = parseInt(document.getElementById('records-per-page-select').value, 10);
+            currentPage = 1;
+            displayCurrentPage();
+            updatePaginationInfo();
+            generatePaginationControls();
+        }
+      
+        // Sort data by specified field and order
+        function sortData(field, order) {
+            filteredData.sort((a, b) => {
+                let aValue = a[field];
+                let bValue = b[field];
+
+                // Handle numbers
+                const numericFields = ['work_time', 'weekly_avg', 'monthly_avg', 'overtime_hours'];
+                if (numericFields.includes(field)) {
+                    aValue = parseFloat(aValue) || 0;
+                    bValue = parseFloat(bValue) || 0;
+                }
+                // Handle time strings like "08:45"
+                else if (field === 'entry_time' || field === 'exit_time') {
+                    aValue = timeToMinutes(aValue);
+                    bValue = timeToMinutes(bValue);
+                }
+                // Everything else as strings
+                else {
+                    aValue = String(aValue || '').toLowerCase();
+                    bValue = String(bValue || '').toLowerCase();
+                }
+
+                if (aValue < bValue) return order === 'asc' ? -1 : 1;
+                if (aValue > bValue) return order === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            currentPage = 1; // reset pagination
+            displayCurrentPage();
+            updatePaginationInfo();
+            generatePaginationControls();
+        }
+
+        // helper function for time sorting
+        function timeToMinutes(timeStr) {
+            if (!timeStr || timeStr === '-') return 0;
+            const parts = timeStr.split(':').map(Number);
+            return parts[0] * 60 + parts[1];
+        }
+
+        // Convert time string to minutes for sorting
+        function convertTimeToMinutes(timeStr) {
+            if (typeof timeStr !== 'string' || timeStr === '-') return 0;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return (hours || 0) * 60 + (minutes || 0);
+        }
+        
+        // Display error message in tables
+        function showErrorMessage(message) {
+            const errorHtml = `<tr><td colspan="10" class="error-message">${message}</td></tr>`;
+            if (!isAdminUser) {
+                document.getElementById('main-data').innerHTML = `<tr><td colspan="7" class="error-message">${message}</td></tr>`;
+            }
+            document.getElementById('reports-data').innerHTML = errorHtml;
+        }
+    </script>
+</body>
+</html>
