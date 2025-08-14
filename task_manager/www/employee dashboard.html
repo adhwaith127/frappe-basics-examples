@@ -60,13 +60,47 @@
 
         /* Card container styling with shadow effects */
         .card-container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.08);
-            padding: 25px;
-            margin-bottom: 25px;
-            transition: var(--transition);
-        }
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.08);
+    padding: 25px;
+    margin-bottom: 25px;
+    transition: all 0.4s ease;
+    opacity: 1;
+    transform: translateY(0);
+}
+card-container.loading {
+    opacity: 0.7;
+    transform: translateY(3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.card-container.loaded {
+    animation: cardFadeIn 0.6s ease;
+}
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0.7;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading-text {
+    margin-top: 15px;
+    color: var(--primary);
+    font-weight: 500;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
 
         .card-container:hover {
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
@@ -83,10 +117,37 @@
 
         /* Table container with rounded corners and shadow */
         .table-container {
-            border-radius: 8px;
-            overflow-x: auto;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    opacity: 1;
+    transform: translateY(0);
+}
+.table-container.loading {
+    opacity: 0.6;
+    transform: translateY(5px);
+    pointer-events: none;
+}
+
+.table-container.loaded {
+    opacity: 1;
+    transform: translateY(0);
+    animation: slideInUp 0.5s ease;
+}
+
+
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
         /* Fixed table layout for consistent column widths */
         .fixed-table {
@@ -125,6 +186,11 @@
             background: linear-gradient(to bottom, #f1f5f9, #e2e8f0);
         }
 
+        #attendance-logs th{
+            background-color: var(--primary);
+            color: white;
+        }
+
         .table th {
             color: var(--dark);
             font-weight: 600;
@@ -156,7 +222,7 @@
         }
 
         .btn-primary:hover {
-            background: #888888;
+            background: #249ba1;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
@@ -341,25 +407,71 @@
         /* Loading spinner animation */
         .loading-spinner {
             display: inline-block;
-            width: 2.5rem;
-            height: 2.5rem;
-            border: 0.3rem solid rgba(44, 111, 187, 0.15);
-            border-right-color: var(--primary);
+            width: 3rem;
+            height: 3rem;
+            border: 0.4rem solid rgba(12, 80, 84, 0.2);
+            border-top: 0.4rem solid var(--primary);
             border-radius: 50%;
-            animation: spinner-border 0.75s linear infinite;
+            animation: spinner-border 1s ease-in-out infinite;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
         }
 
+
         @keyframes spinner-border {
-            to { transform: rotate(360deg); }
+            0% { 
+                transform: rotate(0deg);
+                border-top-color: var(--primary);
+            }
+            25% {
+                border-top-color: var(--secondary);
+            }
+            50% { 
+                transform: rotate(180deg);
+                border-top-color: var(--primary);
+            }
+            75% {
+                border-top-color: var(--secondary);
+            }
+            100% { 
+                transform: rotate(360deg);
+                border-top-color: var(--primary);
+            }
         }
 
         .spinner-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 200px;
-        }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+    border-radius: 10px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
 
+.spinner-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shimmer 2s infinite;
+}
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+
+.spinner-container.show {
+    opacity: 1;
+    transform: translateY(0);
+}
         /* Sort button styling */
         .sort-btn {
             background: transparent;
@@ -385,7 +497,7 @@
 
         /* Modal styling */
         .modal-header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(to right, #0f766e, #155e75) !important;
             color: white;
             border-radius: 0;
         }
@@ -406,6 +518,8 @@
         .rounded-xl {
             border-radius: 14px;
         }
+
+        
 
         /* Status badge styling */
         .status-badge {
@@ -430,6 +544,7 @@
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
+            margin-top: 15px;
         }
 
         .summary-card {
@@ -668,8 +783,11 @@
 
                     <div id="main-table-container" class="table-overlay">
                         <div id="main-spinner" class="d-none spinner-container">
-                            <div class="loading-spinner"></div>
-                        </div>
+    <div>
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading attendance data...</div>
+    </div>
+</div>
                         <div id="main-table" class="table-container" style="padding-top: 20px; margin-bottom: 40px !important;">
                             <table class="table table-hover rounded-3" id="manager-daily-table">
                                 <thead class="table-dark">
@@ -719,8 +837,11 @@
         </div>
 
         <div id="reports-spinner" class="d-none spinner-container">
-            <div class="loading-spinner"></div>
-        </div>
+    <div>
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading reports...</div>
+    </div>
+</div>
 
         <div id="report-container" class="card-container" style="margin-top: 20px;">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
@@ -908,15 +1029,15 @@
                 </div>
                 <div class="modal-body">
                     <div class="employee-info mb-4">
-                        <h6 class="fw-bold text-primary" id="employee-modal-name">Employee Name</h6>
+                        <h6 class="fw-bold text-black mb-2" style="font-size: larger;" id="employee-modal-name">Employee Name</h6>
                         <div class="row">
                             <div class="col-md-6">
                                 <small class="text-muted">Department: </small>
-                                <span id="employee-modal-department">-</span>
+                                <span id="employee-modal-department" style="font-weight: bold;">-</span>
                             </div>
                             <div class="col-md-6">
                                 <small class="text-muted">Reports To: </small>
-                                <span id="employee-modal-reports">-</span>
+                                <span id="employee-modal-reports" style="font-weight: bold;">-</span>
                             </div>
                         </div>
                     </div>
@@ -1126,25 +1247,77 @@
 
 
         // Show loading spinner for specific container
-        function showLoading(containerId) {
-            const spinnerId = containerId.replace('-container', '-spinner');
-            document.getElementById(spinnerId)?.classList.remove('d-none');
-            document.getElementById(containerId)?.classList.add('d-none');
-        }
+function showLoading(containerId) {
+    const container = document.getElementById(containerId);
+    const spinnerId = containerId.replace('-container', '-spinner');
+    const spinner = document.getElementById(spinnerId);
+    
+    if (container && spinner) {
+        // Add loading state to container
+        container.classList.add('loading');
+        
+        // Show spinner with smooth transition
+        spinner.classList.remove('d-none');
+        // Force reflow
+        spinner.offsetHeight;
+        spinner.classList.add('show');
+        
+        // Hide container content smoothly
+        setTimeout(() => {
+            container.classList.add('d-none');
+        }, 200);
+    }
+}
 
-        // Hide loading spinner and show content
-        function hideLoading(containerId) {
-            const spinnerId = containerId.replace('-container', '-spinner');
-            document.getElementById(spinnerId)?.classList.add('d-none');
-            document.getElementById(containerId)?.classList.remove('d-none');
-        }
+function hideLoading(containerId) {
+    const container = document.getElementById(containerId);
+    const spinnerId = containerId.replace('-container', '-spinner');
+    const spinner = document.getElementById(spinnerId);
+    
+    if (container && spinner) {
+        // Hide spinner with smooth transition
+        spinner.classList.remove('show');
+        
+        setTimeout(() => {
+            spinner.classList.add('d-none');
+            
+            // Show container with smooth animation
+            container.classList.remove('d-none', 'loading');
+            container.classList.add('loaded');
+            
+            // Remove loaded class after animation
+            setTimeout(() => {
+                container.classList.remove('loaded');
+            }, 600);
+        }, 300);
+    }
+}
+
+// ADD THIS NEW FUNCTION for better loading states
+function setLoadingState(elementId, isLoading, loadingText = 'Loading...') {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    if (isLoading) {
+        element.classList.add('loading');
+        element.style.pointerEvents = 'none';
+    } else {
+        element.classList.remove('loading');
+        element.classList.add('loaded');
+        element.style.pointerEvents = 'auto';
+        
+        setTimeout(() => {
+            element.classList.remove('loaded');
+        }, 600);
+    }
+}
 
 
         // Main function to load all dashboard data
         async function loadDashboardData() {
             showLoading('main-table-container');
-            document.getElementById('reports-spinner').classList.remove('d-none');
-            
+setLoadingState('report-container', true);
+
             // Reset overtime data on each full load to ensure it's fresh for the new date
             overtimeEmployeeData = [];
             
@@ -1178,7 +1351,7 @@
                 showErrorMessage('An unexpected error occurred. Please try again.');
             } finally {
                 hideLoading('main-table-container');
-                document.getElementById('reports-spinner').classList.add('d-none');
+setLoadingState('report-container', false);
             }
         }
 
@@ -1462,8 +1635,7 @@
             
             // Show loading for overtime data if not loaded yet for the current date
             if (viewType === 'overtime' && overtimeEmployeeData.length === 0) {
-                document.getElementById('reports-spinner').classList.remove('d-none');
-                
+                setLoadingState('report-container', true, 'Loading overtime data...');                
                 try {
                     const overtimeResponse = await fetchOvertimeData(currentDate);
                     if (overtimeResponse && !overtimeResponse.error) {
@@ -1476,8 +1648,7 @@
                     console.error('Error loading overtime data:', error);
                     showErrorMessage("An error occurred while fetching overtime data.");
                 } finally {
-                    document.getElementById('reports-spinner').classList.add('d-none');
-                }
+setLoadingState('report-container', false);                }
             }
             
             updateTableLayout(viewType);
@@ -1625,7 +1796,7 @@
                                 <th>Duration (hrs)</th>
                             </tr>
                         </thead>
-                        <tbody>`;
+                        <tbody id="more-table-body">`;
 
                 let totalHours = 0;
                 checkinPairs.forEach((pair, index) => {
