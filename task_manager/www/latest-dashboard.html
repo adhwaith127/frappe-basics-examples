@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Attendance Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0c5054;
+            --primary-light: #e8f1fd;
+            --secondary: #afdde5;
+            --tertiary: #024950; 
+            --success: #28a745;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --border: #dee2e6;
+            --transition: all 0.3s ease;
+            --btn-padding: 8px 12px;
+            --btn-radius: 8px;
+            --transition: 150ms ease;
+        }
+
+        body {
+            background-color: #e2eaeb;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            zoom: 0.8;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg,#0c5054,#769da5);
+            color: white;
+            border-radius: 10px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .equal-height-row {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .equal-height-row .card-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .card-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            padding: 25px;
+            margin-bottom: 25px;
+            max-height: 95%;
+            transition: var(--transition);
+        }
+
+        .section-title {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .table-container {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-state {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .btn-export {
+            background: #effaf6;
+            color: #0b6b56;
+            border: 1px solid #d1f1e3;
+            padding: var(--btn-padding);
+            border-radius: var(--btn-radius);
+            font-weight: 600;
+            transition: background var(--transition), transform var(--transition);
+            }
+        .btn-export:hover { background: #e0f6ec; transform: translateY(-1px); }
+        .btn-export:active { transform: translateY(0); }
+        .btn-export:focus { outline: none; box-shadow: 0 0 0 4px rgba(11,107,86,0.10); }
+        .btn-export[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+        .btn-reset {
+            background: transparent;
+            color: #6b7280;
+            border: 1px solid #e6e9ee;
+            padding: var(--btn-padding);
+            border-radius: var(--btn-radius);
+            font-weight: 600;
+            transition: background var(--transition), color var(--transition);
+            }
+
+        .btn-reset:hover { background: #f8fafc; color: #374151; }
+        .btn-reset:focus { outline: none; box-shadow: 0 0 0 4px rgba(55,65,81,0.06); }
+        .btn-reset[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-download {
+            background: #effaf6;
+            color: #0b6b56;
+            border: 1px solid #d1f1e3;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 150ms ease, transform 150ms ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            }
+
+        .btn-download:hover { background: #e0f6ec; transform: translateY(-1px); }
+        .btn-download:active { transform: translateY(0); }
+        .btn-download:focus { outline: none; box-shadow: 0 0 0 4px rgba(11,107,86,0.10); }
+        .btn-download[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 3rem;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            margin: 0 5px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            animation: pulse-dot 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        
+        @keyframes pulse-dot {
+            0%, 80%, 100% {
+                transform: scale(0.3);
+                opacity: 0.5;
+            } 40% {
+                transform: scale(1.0);
+                opacity: 1;
+            }
+        }
+
+        .loading-text {
+            margin-top: 15px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .employee-image {
+            width: 40px; height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid var(--primary-light);
+            display: block; margin: 0 auto;
+            transition: var(--transition);
+            position: relative; z-index: 1;
+        }
+
+        .employee-image:hover {
+            transform: scale(1.1);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .image-cell {
+            text-align: center; vertical-align: middle;
+            padding: 8px; width: 70px; position: relative;
+        }
+
+        .image-cell::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 100%;
+            transform: translateY(-50%);
+            width: 120px; height: 120px;
+            background-image: var(--hover-image);
+            background-size: cover; background-position: center;
+            border-radius: 8px; border: 3px solid var(--primary);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            margin-left: 10px;
+        }
+
+        .image-cell:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .fixed-table { table-layout: fixed; width: 100%; }
+        .fixed-table th, .fixed-table td { word-wrap: break-word; overflow-wrap: break-word; }
+
+        .manager-table th:nth-child(1) { width: 10%; }
+        .manager-table th:nth-child(2) { width: 16%; }
+        .manager-table th:nth-child(3) { width: 16%; }
+        .manager-table th:nth-child(4) { width: 13%; }
+        .manager-table th:nth-child(5) { width: 11.5%; }
+        .manager-table th:nth-child(6) { width: 11.5%; }
+        .manager-table th:nth-child(7) { width: 12%; }
+        .manager-table th:nth-child(8) { width: 10%; }
+
+        .reports-table th:nth-child(1) { width: 9%; }
+        .reports-table th:nth-child(2) { width: 20%; }
+        .reports-table th:nth-child(3) { width: 16%; }
+        .reports-table th:nth-child(4) { width: 11%; }
+        .reports-table th:nth-child(5) { width: 9%; }
+        .reports-table th:nth-child(6) { width: 9%; }
+        .reports-table th:nth-child(7) { width: 9%; }
+        .reports-table th:nth-child(8) { width: 9%; }
+        .reports-table th:nth-child(9) { width: 8%; }
+
+        .table th { background-color: var(--primary); color: white; font-weight: 600; vertical-align: middle; padding: 15px; }
+        .table td { vertical-align: middle; padding: 12px 15px; }
+        .table-hover tbody tr:hover { background-color: var(--primary-light); }
+        
+        .more-button { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            padding: 6px 12px; 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        
+        .more-button:hover { 
+            background: #0c595f; 
+            transform: translateY(-1px); 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
+            color: white; 
+        }
+
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-present { background: linear-gradient(135deg, #d4edda, #c3e6cb); color: #155724; border: 1px solid #c3e6cb; }
+        .status-absent { background: linear-gradient(135deg, #f8d7da, #f1b0b7); color: #721c24; border: 1px solid #f1b0b7; }
+        .status-onleave {background: linear-gradient(135deg, #fff3cd, #ffeeba); color: #856404; border: 1px solid #ffeeba;}
+        .status-halfday {background: linear-gradient(135deg, #d1ecf1, #bee5eb); color: #0c5460; border: 1px solid #bee5eb;}
+        .status-holiday {background: linear-gradient(135deg, #e2e3e5, #d6d8db); color: #383d41; border: 1px solid #d6d8db;}
+        .ongoing-session { color: #28a745; font-weight: bold; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+        .search-container { position: relative; flex: 2; min-width: 250px; }
+        .search-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--secondary); pointer-events: none; }
+        .dropdown-options { position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; max-height: 280px; overflow-y: auto; background: white; border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none; }
+        .dropdown-item { padding: 10px 15px; border-bottom: 1px solid var(--border); transition: var(--transition); cursor: pointer; }
+        .dropdown-item:hover { background: var(--primary-light); }
+        .filters-container { background: var(--light); border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
+        .filter-group { flex: 1; min-width: 180px; }
+        .filter-label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--tertiary); font-size: 0.9rem; }
+        .form-control, .form-select { border: 1px solid var(--border); border-radius: 6px; padding: 10px; transition: var(--transition); }
+        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 0.2rem rgba(44, 111, 187, 0.25); }
+        
+        .stats-card { 
+            background: white; 
+            border-radius: 8px; 
+            padding: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+            border-left: 4px solid var(--primary); 
+        }
+        
+        .stats-label { 
+            font-size: 0.8rem; 
+            color: var(--tertiary); 
+            margin-bottom: 3px; 
+        }
+        
+        .stats-value { 
+            font-size: 1.2rem; 
+            font-weight: 600; 
+            color: var(--primary); 
+        }
+        
+        .sort-btn { background: transparent; border: none; padding: 0; font-size: 0.9rem; color: var(--secondary); transition: var(--transition); }
+        .sort-btn:hover { color: white; }
+        .modal-header { background: linear-gradient(to right, #0f766e, #155e75); color: white; }
+        .modal-content { border-radius: 10px; overflow: hidden; }
+        .attendance-summary { display: flex; gap: 15px; margin-bottom: 20px; }
+        .summary-card { flex: 1; background: white; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: var(--transition); }
+        .summary-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .summary-number { font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
+        .summary-label { color: #666; font-size: 0.9rem; }
+        .present-number { color: #28a745; }
+        .absent-number { color: #dc3545; }
+        .total-number { color: var(--primary); }
+        .pagination-container { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 15px 0; border-top: 1px solid var(--border); }
+        .pagination-info { color: var(--primary); font-size: 0.9rem; }
+        .pagination-controls { display: flex; align-items: center; gap: 10px; }
+        .page-link { color: var(--primary); border: 1px solid var(--border); }
+        .page-link:hover { background-color: var(--primary-light); }
+        .page-item.active .page-link { background-color: var(--primary); color: white; border-color: var(--primary); }
+        .error-message { color: #dc3545; text-align: center; padding: 20px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; }
+
+        .modal-body .performance-overview.manager-hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .filters-container, .attendance-summary, .pagination-container { flex-direction: column; gap: 15px; }
+            .page-container { padding: 15px; }
+            .equal-height-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <header class="dashboard-header d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h2 class="text-white fw-bold mb-1" style="font-size: 1.6rem;">Attendance Dashboard</h2>
+                <small class="text-light" style="opacity: 0.85;">Track Employee Attendance and Performance</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-user-circle text-white me-2" style="font-size: 1.5rem;"></i>
+                <span class="text-white fw-semibold" id="current-user-name" style="font-size: 1rem;"></span>
+            </div>
+        </header>
+
+        <div class="attendance-summary">
+            <div class="summary-card" onclick="filterBySummary('total')">
+                <div class="summary-number total-number" id="total-employees">-</div>
+                <div class="summary-label">Total Employees</div>
+            </div>
+            <div class="summary-card" onclick="filterBySummary('present')">
+                <div class="summary-number present-number" id="present-count">-</div>
+                <div class="summary-label">Present Today</div>
+            </div>
+            <div class="summary-card" onclick="filterBySummary('absent')">
+                <div class="summary-number absent-number" id="absent-count">-</div>
+                <div class="summary-label">Absent Today</div>
+            </div>
+        </div>
+
+        <div class="row equal-height-row" id="manager-daily-section">
+            <div class="col-lg-9">
+                <div class="card-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="section-title mb-0" id="manager-title" style="white-space: nowrap;"></h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3" id="manager-date-controls">
+                            <div class="d-flex align-items-center">
+                                <label class="filter-label" style="min-width: max-content;"><i class="fas fa-calendar me-1"></i> Select Date : &nbsp;</label>
+                                <input type="date" id="date-picker-manager" class="form-control border border-primary" style="max-width: 250px; min-width: 200px;">
+                                <i id="reset-to-today-manager" class="fa fa-refresh ms-3" style="font-size:24px; cursor: pointer;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="manager-table-container" class="table-container">
+                        <div class="loading-overlay" id="manager-table-loader">
+                             <div>
+                                <div class="loading-dots">
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                </div>
+                                <div class="loading-text">Loading...</div>
+                            </div>
+                        </div>
+                        <table class="table table-hover fixed-table manager-table">
+                            <thead><tr><th>Image</th><th>Employee Name</th><th>Department</th><th>Status</th><th>Checkin</th><th>Checkout</th><th style="text-align: center;">Work Time (hrs)</th><th>Action</th></tr></thead>
+                            <tbody id="main-data"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="card-container">
+                    <h4 class="section-title">Performance Overview</h4>
+                    <div class="row">
+                        <div class="col-12"><div class="stats-card"><div class="stats-label"><i class="fas fa-clock me-1"></i> Today's Hours</div><div class="stats-value" id="manager-today-hours">-</div></div></div>
+                        <div class="col-12"><div class="stats-card"><div class="stats-label"><i class="fas fa-calendar-week me-1"></i> Weekly Average</div><div class="stats-value" id="manager-weekly-hours">-</div></div></div>
+                        <div class="col-12"><div class="stats-card"><div class="stats-label"><i class="fas fa-calendar-alt me-1"></i> Monthly Average</div><div class="stats-value" id="manager-monthly-hours">-</div></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="report-container" class="card-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="section-title mb-0">Team Attendance Report</h4>
+                <div class="d-flex">
+                    <button class="btn-reset me-2" id="reset-filters"><i class="fas fa-sync-alt me-1"></i> Reset</button>
+                    <button class="btn-export" onclick="showExportModal()" id="exportBtn"><i class="fas fa-file-export me-1"></i> Export</button>
+                </div>
+            </div>
+            
+            <!-- Date picker only shows for admin or when manager daily section is hidden -->
+            <div class="d-flex align-items-center mb-3" id="admin-date-picker">
+                <label class="filter-label me-2"><i class="fas fa-calendar me-1"></i> Select Date:</label>
+                <input type="date" id="date-picker-admin" class="form-control border border-primary" style="max-width: 200px;">
+                <i id="reset-to-today-admin" class="fa fa-refresh ms-3" style="font-size:24px; cursor: pointer;"></i>
+            </div>
+            
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-building me-1"></i> Department</label>
+                    <select class="form-control form-select" id="department-filter"><option value="">All Departments</option></select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-users me-1"></i> Team</label>
+                    <select class="form-control form-select" id="team-filter"><option value="">All Teams</option></select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-user-tie me-1"></i> Reports To</label>
+                    <select class="form-control form-select" id="reports-to-filter"><option value="">All Managers</option></select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-search me-1"></i> Search Employee</label>
+                    <div class="search-container">
+                        <input class="form-control" id="dropdown-search" type="text" placeholder="Enter employee name..." style="padding-right: 35px;">
+                        <i class="fas fa-search search-icon"></i>
+                        <div class="dropdown-options" id="dropdown-options"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reports-table-container" class="table-container">
+                 <div class="loading-overlay" id="reports-table-loader">
+                    <div>
+                        <div class="loading-dots">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                        <div class="loading-text">Loading Reports...</div>
+                    </div>
+                </div>
+                <table class="table table-hover fixed-table reports-table" id="main-data-table">
+                    <thead>
+                        <tr>
+                            <th>Profile</th>
+                            <th><div class="d-flex justify-content-between align-items-center">Employee Name <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('employee', 'asc')">↑</button><button class="sort-btn" onclick="sortData('employee', 'desc')">↓</button></div></div></th>
+                            <th><div class="d-flex justify-content-between align-items-center">Department <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('department', 'asc')">↑</button><button class="sort-btn" onclick="sortData('department', 'desc')">↓</button></div></div></th>
+                            <th>Status</th>
+                            <th><div class="d-flex justify-content-between align-items-center">Checkin <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('entry_time', 'asc')">↑</button><button class="sort-btn" onclick="sortData('entry_time', 'desc')">↓</button></div></div></th>
+                            <th><div class="d-flex justify-content-between align-items-center">Checkout <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('exit_time', 'asc')">↑</button><button class="sort-btn" onclick="sortData('exit_time', 'desc')">↓</button></div></div></th>
+                            <th><div class="d-flex justify-content-between align-items-center">Weekly Avg <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('weekly_avg', 'asc')">↑</button><button class="sort-btn" onclick="sortData('weekly_avg', 'desc')">↓</button></div></div></th>
+                            <th><div class="d-flex justify-content-between align-items-center">Monthly Avg <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('monthly_avg', 'asc')">↑</button><button class="sort-btn" onclick="sortData('monthly_avg', 'desc')">↓</button></div></div></th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reports-data"></tbody>
+                </table>
+                <div class="pagination-container">
+                    <div class="pagination-info"><span id="pagination-info"></span></div>
+                    <div class="pagination-controls">
+                        <div>
+                            <label for="records-per-page-select" class="me-2">Show:</label>
+                            <select class="form-select form-select-sm d-inline-block" id="records-per-page-select" style="width: auto;">
+                                <option value="10" selected>10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+                            </select>
+                        </div>
+                        <nav><ul class="pagination pagination-sm mb-0" id="pagination-controls"></ul></nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="employeeDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-clock me-2"></i><span id="modal-title-text">Employee Details</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <h6 class="fw-bold" id="employee-modal-name"></h6>
+                        <div class="row">
+                            <div class="col-md-6"><small class="text-muted">Department:</small> <strong id="employee-modal-department">-</strong></div>
+                            <div class="col-md-6" id="reports-to-container"><small class="text-muted">Reports To:</small> <strong id="employee-modal-reports">-</strong></div>
+                        </div>
+                    </div>
+                    <div class="border-top pt-3 mb-2 performance-overview">
+                        <h6 class="mb-3">Performance Overview</h6>
+                        <div class="row">
+                            <div class="col-md-4"><div class="stats-card"><div class="stats-label">Today's Hours</div><div class="stats-value" id="employee-modal-today">-</div></div></div>
+                            <div class="col-md-4"><div class="stats-card"><div class="stats-label">Weekly Average</div><div class="stats-value" id="employee-modal-weekly">-</div></div></div>
+                            <div class="col-md-4"><div class="stats-card"><div class="stats-label">Monthly Average</div><div class="stats-value" id="employee-modal-monthly">-</div></div></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="mb-3">Check-in/Check-out Sessions</h6>
+                        <div id="logs-container"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="exportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-export me-2"></i>Export Report</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="exportForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label for="export-employee" class="form-label"><i class="fas fa-user me-1"></i>Employee</label><select class="form-select" id="export-employee"><option value="">All Employees</option></select></div>
+                            <div class="col-md-6 mb-3"><label for="export-department" class="form-label"><i class="fas fa-building me-1"></i>Department</label><select class="form-select" id="export-department"><option value="">All Departments</option></select></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label for="export-team" class="form-label"><i class="fas fa-users me-1"></i>Team</label><select class="form-select" id="export-team"><option value="">All Teams</option></select></div>
+                            <div class="col-md-6 mb-3"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label for="export-from-date" class="form-label"><i class="fas fa-calendar me-1"></i>From Date <span class="text-danger">*</span></label><input type="date" class="form-control" id="export-from-date" required></div>
+                            <div class="col-md-6 mb-3"><label for="export-to-date" class="form-label"><i class="fas fa-calendar me-1"></i>To Date <span class="text-danger">*</span></label><input type="date" class="form-control" id="export-to-date" required></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Cancel</button>
+                    <button class="btn-download" id="downloadCsv" onclick="processExport()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M12 3v10m0 0l4-4m-4 4l-4-4M4 21h16" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- STATE & CONFIG ---
+        let currentPage = 1, recordsPerPage = 10, totalRecords = 0;
+        let allEmployeeData = [], filteredData = [];
+        let currentDate = new Date().toISOString().split('T')[0];
+        let managerData = null;
+        let isAdminUser = false, searchTimeout, activeSummaryFilter = 'total';
+        const API_BASE_URL = `${window.location.origin}/api/method/sil.test.attendance_api.fetch_checkins`;
+        const EXPORT_API_URL = `${window.location.origin}/api/method/sil.test.export.export_attendance`;
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDatePickers();
+            setupEventListeners();
+            loadDashboardData();
+        });
+
+        function initializeDatePickers() {
+            const today = new Date().toISOString().split('T')[0];
+            ['date-picker-manager', 'date-picker-admin', 'export-from-date', 'export-to-date'].forEach(id => {
+                const picker = document.getElementById(id);
+                if (picker) {
+                    if (id.includes('date-picker')) picker.value = today;
+                    picker.setAttribute("max", today);
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            document.getElementById('date-picker-manager').addEventListener('change', handleDateChange);
+            document.getElementById('date-picker-admin').addEventListener('change', handleDateChange);
+            document.getElementById('reset-to-today-manager').addEventListener('click', resetToToday);
+            document.getElementById('reset-to-today-admin').addEventListener('click', resetToToday);
+            document.getElementById('records-per-page-select').addEventListener('change', changeRecordsPerPage);
+            document.getElementById('department-filter').addEventListener('change', handleDepartmentFilter);
+            document.getElementById('team-filter').addEventListener('change', handleTeamFilter);
+            document.getElementById('reports-to-filter').addEventListener('change', handleReportsToFilter);
+            document.getElementById('dropdown-search').addEventListener('input', handleSearchInput);
+            document.getElementById('dropdown-search').addEventListener('focus', showEmployeeDropdown);
+            document.getElementById('dropdown-search').addEventListener('blur', () => setTimeout(hideEmployeeDropdown, 150));
+            document.getElementById('reset-filters').addEventListener('click', resetFilters);
+            document.getElementById('export-employee').addEventListener('change', handleExportEmployeeChange);
+            document.getElementById('export-department').addEventListener('change', handleExportDepartmentChange);
+        }
+
+        // --- LOADING & API ---
+        function showLoading(containerId) {
+            const container = document.getElementById(containerId);
+            const loader = document.getElementById(containerId.replace('container', 'loader'));
+            if (container && loader) {
+                container.classList.add('loading-state');
+                loader.classList.add('show');
+            }
+        }
+
+        function hideLoading(containerId) {
+            const container = document.getElementById(containerId);
+            const loader = document.getElementById(containerId.replace('container', 'loader'));
+            if (container && loader) {
+                container.classList.remove('loading-state');
+                loader.classList.remove('show');
+            }
+        }
+
+        async function loadDashboardData() {
+            showLoading('manager-table-container');
+            showLoading('reports-table-container');
+            try {
+                const response = await fetch(`${API_BASE_URL}?specific_date=${currentDate}`);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const data = await response.json();
+                const message = data.message || data;
+                
+                processApiResponse(message);
+                updateDashboard();
+                updateUserInterface();
+                populateEmployeeData();
+                populateFilterDropdowns();
+                populateExportModal();
+            } catch (error) {
+                showErrorMessage(error.message);
+            } finally {
+                hideLoading('manager-table-container');
+                hideLoading('reports-table-container');
+            }
+        }
+
+        // --- DATA PROCESSING & UI ---
+        function processApiResponse(response) {
+            isAdminUser = response.user_id === "Administrator";
+            managerData = response.manager_data || null;
+            allEmployeeData = Object.values(response.subordinates_data || {})
+                .map(empData => createEmployeeRecord(empData))
+                .filter(Boolean)
+                .sort((a, b) => a.employee.localeCompare(b.employee));
+        }
+
+        function createEmployeeRecord(data) {
+            const info = data?.employee_info || {};
+            const daily = data?.daily_data || {};
+            return {
+                id: info.name, image: info.image,
+                employee: info.emp_display_name || info.name,
+                department: info.department || 'N/A', 
+                team: info.custom_team || 'N/A',
+                reports_to: info.reports_to || 'N/A',
+                status: daily.status || 'Absent', entry_time: daily.entry_time || '-', exit_time: daily.exit_time || '-',
+                work_time: daily.daily_working_hours || 0,
+                weekly_avg: data.weekly_summary?.average_work_hours || 0,
+                monthly_avg: data.monthly_summary?.average_work_hours || 0,
+                checkin_pairs: daily.checkin_pairs || [], raw_data: data
+            };
+        }
+
+        function updateDashboard() {
+            const presentCount = allEmployeeData.filter(emp => emp.status === 'Present').length;
+            document.getElementById('total-employees').textContent = allEmployeeData.length;
+            document.getElementById('present-count').textContent = presentCount;
+            document.getElementById('absent-count').textContent = allEmployeeData.length - presentCount;
+            if (!isAdminUser && managerData) {
+                document.getElementById('manager-today-hours').textContent = formatHours(managerData.daily_data?.daily_working_hours);
+                document.getElementById('manager-weekly-hours').textContent = formatHours(managerData.weekly_summary?.average_work_hours);
+                document.getElementById('manager-monthly-hours').textContent = formatHours(managerData.monthly_summary?.average_work_hours);
+            }
+        }
+
+        function updateUserInterface() {
+            const userName = isAdminUser ? 'Administrator' : (managerData?.employee_info?.emp_display_name || 'Manager');
+            document.getElementById('current-user-name').textContent = userName;
+            document.getElementById('manager-title').textContent = userName + ' - Daily Summary';
+            
+            // Show/hide manager daily section
+            const managerSection = document.getElementById('manager-daily-section');
+            const adminDatePicker = document.getElementById('admin-date-picker');
+            
+            if (isAdminUser) {
+                managerSection.style.display = 'none';
+                adminDatePicker.style.display = 'flex';
+            } else {
+                managerSection.style.display = 'flex';
+                adminDatePicker.style.display = 'none';
+                populateManagerTable();
+            }
+        }
+
+        function populateManagerTable() {
+            const tbody = document.getElementById('main-data');
+            if (!managerData?.employee_info) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">Manager data not available.</td></tr>';
+                return;
+            }
+            const managerRecord = createEmployeeRecord(managerData);
+            const imageUrl = managerRecord.image ? `${window.location.origin}${managerRecord.image}` : getDefaultImage();
+            tbody.innerHTML = `
+                <tr>
+                    <td class="image-cell" style="--hover-image: url('${imageUrl}')">
+                        <img class="employee-image" src="${imageUrl}" alt="${managerRecord.employee}" onerror="this.src=getDefaultImage(); this.parentElement.style.setProperty('--hover-image', 'url(' + getDefaultImage() + ')');"/>
+                    </td>
+                    <td>${managerRecord.employee}</td><td>${managerRecord.department}</td>
+                    <td>${getStatusBadge(managerRecord)}</td><td>${managerRecord.entry_time}</td>
+                    <td class="${getExitTimeDisplay(managerRecord).includes('Ongoing') ? 'ongoing-session' : ''}">${getExitTimeDisplay(managerRecord)}</td>
+                    <td>${(managerRecord.work_time || 0).toFixed(2)}</td>
+                    <td><button class="btn btn-sm more-button" onclick="showManagerDetails()"><i class="fas fa-eye me-1"></i>More</button></td>
+                </tr>`;
+        }
+        
+        // --- HIERARCHICAL FILTER HANDLERS ---
+        function handleDepartmentFilter() {
+            // Reset downstream filters
+            document.getElementById('team-filter').value = '';
+            document.getElementById('reports-to-filter').value = '';
+            
+            // Update dropdowns with new options
+            updateTeamDropdown();
+            updateReportsToDropdown();
+            applyFilters();
+        }
+
+        function handleTeamFilter() {
+            // Reset downstream filters
+            document.getElementById('reports-to-filter').value = '';
+            
+            // Update dropdowns with new options
+            updateReportsToDropdown();
+            applyFilters();
+        }
+
+        function handleReportsToFilter() {
+            applyFilters();
+        }
+
+        function handleSearchInput() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                applyFilters();
+                showEmployeeDropdown();
+            }, 300);
+        }
+
+        function resetFilters() {
+            // Reset all filter values
+            ['department-filter', 'team-filter', 'reports-to-filter', 'dropdown-search'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            activeSummaryFilter = 'total';
+            
+            // Repopulate all dropdowns with full options
+            populateFilterDropdowns();
+            applyFilters();
+        }
+
+        // --- DROPDOWN POPULATION FUNCTIONS ---
+        function populateFilterDropdowns() {
+            populateDepartmentDropdown();
+            updateTeamDropdown();
+            updateReportsToDropdown();
+        }
+
+        function populateDepartmentDropdown() {
+            const departments = [...new Set(allEmployeeData.map(e => e.department).filter(d => d && d !== 'N/A'))].sort();
+            populateSelect('department-filter', departments, 'All Departments');
+        }
+
+        function updateTeamDropdown() {
+            const selectedDept = document.getElementById('department-filter').value;
+            let filteredEmployees = allEmployeeData;
+            
+            // Filter by selected department if any
+            if (selectedDept) {
+                filteredEmployees = allEmployeeData.filter(e => e.department === selectedDept);
+            }
+            
+            const teams = [...new Set(filteredEmployees.map(e => e.team).filter(t => t && t !== 'N/A'))].sort();
+            populateSelect('team-filter', teams, 'All Teams');
+        }
+
+        function updateReportsToDropdown() {
+            const selectedDept = document.getElementById('department-filter').value;
+            const selectedTeam = document.getElementById('team-filter').value;
+            let filteredEmployees = allEmployeeData;
+            
+            // Filter by selected department and team if any
+            if (selectedDept) {
+                filteredEmployees = filteredEmployees.filter(e => e.department === selectedDept);
+            }
+            if (selectedTeam) {
+                filteredEmployees = filteredEmployees.filter(e => e.team === selectedTeam);
+            }
+            
+            const managers = [...new Set(filteredEmployees.map(e => e.reports_to).filter(m => m && m !== 'N/A'))].sort();
+            populateSelect('reports-to-filter', managers, 'All Managers');
+        }
+
+        // --- EXPORT MODAL HANDLERS ---
+        function handleExportEmployeeChange(e) {
+            const exportDept = document.getElementById('export-department');
+            const exportTeam = document.getElementById('export-team');
+            const employeeId = e.target.value;
+            
+            if (employeeId) {
+                const emp = allEmployeeData.find(e => e.id === employeeId);
+                if (emp) {
+                    exportDept.value = emp.department;
+                    exportTeam.value = emp.team;
+                    exportDept.disabled = true;
+                    exportTeam.disabled = true;
+                }
+            } else {
+                exportDept.value = '';
+                exportTeam.value = '';
+                exportDept.disabled = false;
+                exportTeam.disabled = false;
+                updateExportTeamDropdown();
+            }
+        }
+
+        function handleExportDepartmentChange() {
+            // Reset team when department changes
+            document.getElementById('export-team').value = '';
+            updateExportTeamDropdown();
+        }
+
+        function updateExportTeamDropdown() {
+            const selectedDept = document.getElementById('export-department').value;
+            let filteredEmployees = allEmployeeData;
+            
+            if (selectedDept) {
+                filteredEmployees = allEmployeeData.filter(e => e.department === selectedDept);
+            }
+            
+            const teams = [...new Set(filteredEmployees.map(e => e.team).filter(t => t && t !== 'N/A'))].sort();
+            populateSelect('export-team', teams, 'All Teams');
+        }
+
+        // --- FILTER APPLICATION ---
+        function applyFilters() {
+            const dept = document.getElementById('department-filter').value;
+            const team = document.getElementById('team-filter').value;
+            const manager = document.getElementById('reports-to-filter').value;
+            const search = document.getElementById('dropdown-search').value.toLowerCase();
+            
+            filteredData = allEmployeeData.filter(e => 
+                (!dept || e.department === dept) && 
+                (!team || e.team === team) &&
+                (!manager || e.reports_to === manager) && 
+                (e.employee.toLowerCase().includes(search)) &&
+                (activeSummaryFilter === 'total' || 
+                 (activeSummaryFilter === 'present' && e.status === 'Present') || 
+                 (activeSummaryFilter === 'absent' && e.status === 'Absent'))
+            );
+            
+            totalRecords = filteredData.length;
+            currentPage = 1;
+            displayCurrentPage();
+            updatePaginationInfo();
+            generatePaginationControls();
+        }
+        
+        window.filterBySummary = function(type) { 
+            activeSummaryFilter = type; 
+            document.getElementById('department-filter').value = '';
+            document.getElementById('team-filter').value = '';
+            document.getElementById('reports-to-filter').value = '';
+            document.getElementById('dropdown-search').value = '';
+            populateFilterDropdowns();
+            applyFilters(); 
+        };
+
+        // --- RENDERING ---
+        function displayCurrentPage() {
+            const start = (currentPage - 1) * recordsPerPage;
+            const end = start + recordsPerPage;
+            const pageData = filteredData.slice(start, end);
+            const tbody = document.getElementById('reports-data');
+            tbody.innerHTML = pageData.length > 0 ? pageData.map(generateAttendanceRow).join('') : `<tr><td colspan="9" class="text-center">No matching records found.</td></tr>`;
+        }
+
+        function generateAttendanceRow(employee) {
+            const imageUrl = employee.image ? `${window.location.origin}${employee.image}` : getDefaultImage();
+            return `
+                <tr>
+                    <td class="image-cell" style="--hover-image: url('${imageUrl}')">
+                        <img class="employee-image" src="${imageUrl}" alt="${employee.employee}" onerror="this.src=getDefaultImage(); this.parentElement.style.setProperty('--hover-image', 'url(' + getDefaultImage() + ')');"/>
+                    </td>
+                    <td>${employee.employee}</td><td>${employee.department}</td>
+                    <td>${getStatusBadge(employee)}</td><td>${employee.entry_time}</td>
+                    <td class="${getExitTimeDisplay(employee).includes('Ongoing') ? 'ongoing-session' : ''}">${getExitTimeDisplay(employee)}</td>
+                    <td><strong>${formatAvgHours(employee.weekly_avg)}</strong></td>
+                    <td><strong>${formatAvgHours(employee.monthly_avg)}</strong></td>
+                    <td><button class="btn btn-sm more-button" onclick="showEmployeeDetails('${employee.id}')"><i class="fas fa-eye me-1"></i>More</button></td>
+                </tr>`;
+        }
+
+        // --- UTILITIES ---
+        const formatHours = h => (typeof h === 'number' && h > 0) ? h.toFixed(2) : '-';
+        const formatAvgHours = h => (typeof h === 'number' && h > 0) ? `${h.toFixed(2)}h` : '-';
+        const getDefaultImage = () => 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNlNWU3ZWIiLz4KPHBhdGggZD0iTTIwIDIwYzIuNzYgMCA1LTIuMjQgNS01cy0yLjI0LTUtNS01LTUgMi4yNC01IDUgMi4yNCA1IDUgNXptMCAyYy0zLjMzIDAtMTAgMS42Ny0xMCA1djNoMjB2LTNjMC0zLjMzLTYuNjctNS0xMC01eiIgZmlsbD0iIzljYTNhZiIvPgo8L3N2Zz4K';
+        
+        const getStatusBadge = (emp) => {
+            switch (emp.status) {
+                case "Present":
+                    return '<span class="status-badge status-present">Present</span>';
+                case "On Leave":
+                    return '<span class="status-badge status-onleave">On Leave</span>';
+                case "Halfday":
+                    return '<span class="status-badge status-halfday">Half Day</span>';
+                case "Holiday":
+                    return '<span class="status-badge status-holiday">Holiday</span>';
+                case "LWP":
+                    return '<span class="status-badge status-lwp">LWP</span>';
+                default:
+                    return `<span class="status-badge status-absent">${emp.status || 'Absent'}</span>`;
+            }
+        };
+
+        const getExitTimeDisplay = emp => (emp.raw_data?.daily_data?.has_ongoing_session || emp.checkin_pairs?.some(p => p.ongoing)) ? 'Ongoing' : (emp.exit_time || "-");
+        
+        function populateSelect(id, options, defaultLabel) {
+            const select = document.getElementById(id);
+            const val = select.value;
+            select.innerHTML = `<option value="">${defaultLabel}</option>`;
+            options.forEach(opt => select.add(new Option(opt.text || opt, opt.value || opt)));
+            select.value = val;
+        }
+
+        function showErrorMessage(message) {
+            const errorRow = (cols) => `<tr><td colspan="${cols}" class="error-message">${message}</td></tr>`;
+            document.getElementById('reports-data').innerHTML = errorRow(9);
+            document.getElementById('main-data').innerHTML = errorRow(8);
+        }
+        
+        // --- MANAGER & EMPLOYEE DETAILS ---
+        window.showManagerDetails = function() {
+            if (!managerData) return;
+            
+            const managerRecord = createEmployeeRecord(managerData);
+            
+            document.getElementById('modal-title-text').textContent = 'Manager Details';
+            document.getElementById('employee-modal-name').textContent = managerRecord.employee;
+            document.getElementById('employee-modal-department').textContent = managerRecord.department;
+            document.getElementById('reports-to-container').style.display = 'none';
+            
+            const performanceOverview = document.querySelector('.performance-overview');
+            performanceOverview.classList.add('manager-hidden');
+            
+            displayCheckinSessions(managerRecord);
+            new bootstrap.Modal(document.getElementById('employeeDetailsModal')).show();
+        };
+
+        window.showEmployeeDetails = function(employeeId) {
+            const emp = allEmployeeData.find(e => e.id === employeeId);
+            if (!emp) return;
+            
+            document.getElementById('modal-title-text').textContent = 'Employee Details';
+            document.getElementById('reports-to-container').style.display = 'block';
+            
+            const performanceOverview = document.querySelector('.performance-overview');
+            performanceOverview.classList.remove('manager-hidden');
+            
+            document.getElementById('employee-modal-name').textContent = emp.employee;
+            document.getElementById('employee-modal-department').textContent = emp.department;
+            document.getElementById('employee-modal-reports').textContent = emp.reports_to;
+            document.getElementById('employee-modal-today').textContent = formatAvgHours(emp.work_time);
+            document.getElementById('employee-modal-weekly').textContent = formatAvgHours(emp.weekly_avg);
+            document.getElementById('employee-modal-monthly').textContent = formatAvgHours(emp.monthly_avg);
+
+            displayCheckinSessions(emp);
+            new bootstrap.Modal(document.getElementById('employeeDetailsModal')).show();
+        };
+
+        function displayCheckinSessions(employee) {
+            const logsContainer = document.getElementById('logs-container');
+            if (employee.checkin_pairs.length > 0) {
+                let totalHours = 0;
+                logsContainer.innerHTML = `<div class="table-responsive"><table class="table table-sm table-striped mb-0"><thead><tr><th>Session</th><th>Check In</th><th>Check Out</th><th>Duration</th><th>Status</th></tr></thead><tbody>${employee.checkin_pairs.map((p, i) => {
+                    totalHours += p.duration || 0;
+                    const status = p.ongoing ? '<span class="badge bg-success">🟢 Ongoing</span>' : (p.auto_closed ? '<span class="badge bg-warning text-dark">Auto-closed</span>' : '<span class="badge bg-secondary">Completed</span>');
+                    return `<tr class="${p.ongoing ? 'table-success' : ''}"><td><strong>Session ${i+1}</strong></td><td>${p.in_time || '-'}</td><td>${p.out_time || '-'}</td><td>${(p.duration || 0).toFixed(2)}h</td><td>${status}</td></tr>`;
+                }).join('')}
+                <tr class="table-info fw-bold"><td><strong>Total</strong></td><td colspan="2"><strong>Total Work Time</strong></td><td><strong>${totalHours.toFixed(2)} hrs</strong></td><td></td></tr>
+                </tbody></table></div>`;
+            } else {
+                logsContainer.innerHTML = '<p class="text-muted">No check-in/check-out data available for this date.</p>';
+            }
+        }
+
+        window.sortData = (field, order) => {
+            filteredData.sort((a, b) => {
+                let valA = a[field], valB = b[field];
+                const timeToMinutes = t => !t || t === '-' ? 0 : t.split(':').reduce((h, m) => h * 60 + +m);
+                if (['work_time', 'weekly_avg', 'monthly_avg'].includes(field)) { 
+                    valA = parseFloat(valA) || 0; valB = parseFloat(valB) || 0; 
+                } else if (['entry_time', 'exit_time'].includes(field)) { 
+                    valA = timeToMinutes(valA); valB = timeToMinutes(valB); 
+                } else { 
+                    valA = String(valA || '').toLowerCase(); valB = String(valB || '').toLowerCase(); 
+                }
+                if (valA < valB) return order === 'asc' ? -1 : 1;
+                if (valA > valB) return order === 'asc' ? 1 : -1;
+                return 0;
+            });
+            currentPage = 1;
+            displayCurrentPage();
+            updatePaginationInfo();
+            generatePaginationControls();
+        };
+        
+        // --- Additional Functions ---
+        const populateEmployeeData = () => { filteredData = [...allEmployeeData]; applyFilters(); };
+        
+        const hideEmployeeDropdown = () => document.getElementById('dropdown-options').style.display = 'none';
+        const selectEmployee = (name) => { document.getElementById('dropdown-search').value = name; hideEmployeeDropdown(); applyFilters(); };
+        
+        const showEmployeeDropdown = () => {
+            const dropdown = document.getElementById('dropdown-options');
+            const searchVal = document.getElementById('dropdown-search').value.toLowerCase();
+            
+            dropdown.innerHTML = "";
+            
+            const availableEmployees = filteredData
+                .filter(emp => emp.employee.toLowerCase().includes(searchVal))
+                .sort((a, b) => a.employee.localeCompare(b.employee));
+
+            if (availableEmployees.length === 0) {
+                dropdown.innerHTML = '<div class="dropdown-item text-muted">No employees match filters</div>';
+            } else {
+                availableEmployees.forEach(employee => {
+                    const option = document.createElement('div');
+                    option.className = 'dropdown-item';
+                    option.textContent = employee.employee;
+                    option.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        selectEmployee(employee.employee);
+                    });
+                    dropdown.appendChild(option);
+                });
+            }
+            
+            dropdown.style.display = availableEmployees.length > 0 ? 'block' : 'none';
+        };
+        
+        const changeRecordsPerPage = () => { recordsPerPage = parseInt(document.getElementById('records-per-page-select').value, 10); goToPage(1); };
+        const updatePaginationInfo = () => { const s = totalRecords>0?(currentPage-1)*recordsPerPage+1:0, e = Math.min(currentPage*recordsPerPage,totalRecords); document.getElementById('pagination-info').textContent=`Showing ${s} to ${e} of ${totalRecords} entries`; };
+        const generatePaginationControls = () => { 
+            const t = Math.ceil(totalRecords/recordsPerPage), c = document.getElementById('pagination-controls'); 
+            if(t<=1){c.innerHTML='';return} 
+            let h=`<li class="page-item ${currentPage===1?'disabled':''}"><button class="page-link" onclick="goToPage(${currentPage-1})">&laquo;</button></li>`; 
+            for(let i=1;i<=t;i++)h+=`<li class="page-item ${i===currentPage?'active':''}"><button class="page-link" onclick="goToPage(${i})">${i}</button></li>`; 
+            h+=`<li class="page-item ${currentPage===t?'disabled':''}"><button class="page-link" onclick="goToPage(${currentPage+1})">&raquo;</button></li>`; 
+            c.innerHTML=h; 
+        };
+        
+        window.goToPage = (p) => { 
+            if (p>=1&&p<=Math.ceil(totalRecords/recordsPerPage)){
+                currentPage=p;
+                displayCurrentPage();
+                updatePaginationInfo();
+                generatePaginationControls()
+            }
+        };
+
+        // --- DATE HANDLERS ---
+        function handleDateChange(event) {
+            currentDate = event.target.value;
+            document.getElementById('date-picker-manager').value = currentDate;
+            document.getElementById('date-picker-admin').value = currentDate;
+            loadDashboardData();
+        }
+
+        function resetToToday() {
+            const today = new Date().toISOString().split('T')[0];
+            if (currentDate !== today) {
+                currentDate = today;
+                document.getElementById('date-picker-manager').value = today;
+                document.getElementById('date-picker-admin').value = today;
+                loadDashboardData();
+            }
+        }
+
+        // --- EXPORT MODAL ---
+        function populateExportModal() {
+            populateSelect('export-employee', allEmployeeData.map(e => ({ value: e.id, text: e.employee })), 'All Employees');
+            populateSelect('export-department', [...new Set(allEmployeeData.map(e => e.department).filter(Boolean))].sort(), 'All Departments');
+            updateExportTeamDropdown();
+        }
+
+        window.showExportModal = () => {
+            document.getElementById('exportForm').reset();
+            document.getElementById('export-department').disabled = false;
+            document.getElementById('export-team').disabled = false;
+            updateExportTeamDropdown();
+            new bootstrap.Modal(document.getElementById('exportModal')).show();
+        };
+
+        window.processExport = async () => {
+            const employeeId = document.getElementById('export-employee').value;
+            const department = document.getElementById('export-department').value;
+            const team = document.getElementById('export-team').value;
+            const fromDate = document.getElementById('export-from-date').value;
+            const toDate = document.getElementById('export-to-date').value;
+            
+            if (!fromDate || !toDate) {
+                alert('Please select both From Date and To Date.');
+                return;
+            }
+            
+            if (new Date(fromDate) > new Date(toDate)) {
+                alert('The "From" date cannot be later than the "To" date.');
+                return;
+            }
+            
+            let url = `${EXPORT_API_URL}?start=${fromDate}&end=${toDate}`;
+            if (employeeId) url += `&emp=${employeeId}`;
+            if (department) url += `&dept=${department}`;
+            if (team) url += `&team=${team}`;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Export failed.');
+                
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `attendance_report_${fromDate}_to_${toDate}.csv`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                
+                bootstrap.Modal.getInstance(document.getElementById('exportModal')).hide();
+            } catch (error) {
+                alert(`Export failed: ${error.message}`);
+            }
+        };
+        </script>
+</body>
+</html> 

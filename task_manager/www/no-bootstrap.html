@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Attendance Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Bootstrap Reset and Base Styles */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #e2eaeb;
+        }
+
+        /* Bootstrap Container */
+        .container, .container-fluid {
+            width: 100%;
+            padding-right: 15px;
+            padding-left: 15px;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        /* Bootstrap Grid System */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+
+        .col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+        .col-md, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12,
+        .col-lg, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
+            position: relative;
+            width: 100%;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        .col-12 { flex: 0 0 100%; max-width: 100%; }
+        .col-md-4 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+        .col-md-6 { flex: 0 0 50%; max-width: 50%; }
+        .col-lg-3 { flex: 0 0 25%; max-width: 25%; }
+        .col-lg-9 { flex: 0 0 75%; max-width: 75%; }
+
+        @media (max-width: 767.98px) {
+            .col-md-4, .col-md-6 { flex: 0 0 100%; max-width: 100%; }
+            .col-lg-3, .col-lg-9 { flex: 0 0 100%; max-width: 100%; }
+        }
+
+        /* Bootstrap Flexbox Utilities */
+        .d-flex { display: flex !important; }
+        .d-none { display: none !important; }
+        .d-inline-block { display: inline-block !important; }
+        .flex-wrap { flex-wrap: wrap !important; }
+        .flex-column { flex-direction: column !important; }
+        .justify-content-between { justify-content: space-between !important; }
+        .justify-content-center { justify-content: center !important; }
+        .align-items-center { align-items: center !important; }
+        .align-items-stretch { align-items: stretch !important; }
+
+        /* Bootstrap Spacing Utilities */
+        .m-0 { margin: 0 !important; }
+        .mb-0 { margin-bottom: 0 !important; }
+        .mb-1 { margin-bottom: 0.25rem !important; }
+        .mb-2 { margin-bottom: 0.5rem !important; }
+        .mb-3 { margin-bottom: 1rem !important; }
+        .mb-4 { margin-bottom: 1.5rem !important; }
+        .me-1 { margin-right: 0.25rem !important; }
+        .me-2 { margin-right: 0.5rem !important; }
+        .me-3 { margin-right: 1rem !important; }
+        .ms-3 { margin-left: 1rem !important; }
+        .mt-15 { margin-top: 15px !important; }
+
+        /* Bootstrap Text Utilities */
+        .text-white { color: #fff !important; }
+        .text-muted { color: #6c757d !important; }
+        .text-center { color: center !important; }
+        .text-danger { color: #dc3545 !important; }
+        .fw-bold { font-weight: 700 !important; }
+        .fw-semibold { font-weight: 600 !important; }
+
+        /* Bootstrap Buttons */
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            text-align: center;
+            text-decoration: none;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            background-color: transparent;
+            border: 1px solid transparent;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            border-radius: 0.375rem;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .btn:hover { text-decoration: none; }
+
+        .btn-primary {
+            color: #fff;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .btn-primary:hover {
+            color: #fff;
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+        }
+
+        .btn-secondary {
+            color: #fff;
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            color: #fff;
+            background-color: #5c636a;
+            border-color: #565e64;
+        }
+
+        .btn-outline-primary {
+            color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .btn-outline-primary:hover {
+            color: #fff;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.25rem;
+        }
+
+        .btn-close {
+            box-sizing: content-box;
+            width: 1em;
+            height: 1em;
+            padding: 0.25em 0.25em;
+            color: #000;
+            background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='m.235.757 14.014 14.014a.525.525 0 0 0 .743-.743L.982.014a.525.525 0 0 0-.743.743zM15.232 1.058 1.218 15.072a.525.525 0 0 1-.743-.743L14.489.315a.525.525 0 0 1 .743.743z'/%3e%3c/svg%3e") center/1em auto no-repeat;
+            border: 0;
+            border-radius: 0.375rem;
+            opacity: 0.5;
+        }
+
+        .btn-close:hover { opacity: 0.75; }
+
+        /* Bootstrap Forms */
+        .form-control, .form-select {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ced4da;
+            appearance: none;
+            border-radius: 0.375rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .form-control:focus, .form-select:focus {
+            color: #212529;
+            background-color: #fff;
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+            padding-right: 2.5rem;
+        }
+
+        .form-select-sm {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            padding-left: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-label {
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #212529;
+        }
+
+        /* Bootstrap Tables */
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+            color: #212529;
+            vertical-align: top;
+            border-color: #dee2e6;
+        }
+
+        .table th, .table td {
+            padding: 0.5rem 0.5rem;
+            background-color: var(--bs-table-bg);
+            border-bottom-width: 1px;
+        }
+
+        .table th {
+            font-weight: 600;
+            color: #212529;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.075);
+        }
+
+        .table-striped > tbody > tr:nth-of-type(odd) > td,
+        .table-striped > tbody > tr:nth-of-type(odd) > th {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-sm th, .table-sm td {
+            padding: 0.25rem 0.25rem;
+        }
+
+        .table-success, .table-success > th, .table-success > td {
+            background-color: #d1e7dd;
+        }
+
+        .table-info, .table-info > th, .table-info > td {
+            background-color: #d1ecf1;
+        }
+
+        /* Bootstrap Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.35em 0.65em;
+            font-size: 0.75em;
+            font-weight: 700;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.375rem;
+        }
+
+        .bg-success { background-color: #198754 !important; }
+        .bg-warning { background-color: #ffc107 !important; }
+        .bg-secondary { background-color: #6c757d !important; }
+        .text-dark { color: #212529 !important; }
+
+        /* Bootstrap Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1055;
+            display: none;
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+            outline: 0;
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal-dialog {
+            position: relative;
+            width: auto;
+            margin: 0.5rem;
+            pointer-events: none;
+        }
+
+        .modal-lg {
+            max-width: 800px;
+        }
+
+        .modal-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            pointer-events: auto;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 0.5rem;
+            outline: 0;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1050;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            opacity: 0.5;
+        }
+
+        .modal-header {
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1rem;
+            border-bottom: 1px solid #dee2e6;
+            border-top-left-radius: calc(0.5rem - 1px);
+            border-top-right-radius: calc(0.5rem - 1px);
+        }
+
+        .modal-title {
+            margin-bottom: 0;
+            line-height: 1.5;
+        }
+
+        .modal-body {
+            position: relative;
+            flex: 1 1 auto;
+            padding: 1rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0.75rem;
+            border-top: 1px solid #dee2e6;
+            border-bottom-right-radius: calc(0.5rem - 1px);
+            border-bottom-left-radius: calc(0.5rem - 1px);
+        }
+
+        .modal-footer > * {
+            margin: 0.25rem;
+        }
+
+        /* Bootstrap Pagination */
+        .pagination {
+            display: flex;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .page-item:not(:first-child) .page-link {
+            margin-left: -1px;
+        }
+
+        .page-item.active .page-link {
+            z-index: 3;
+            color: #fff;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            background-color: #fff;
+            border-color: #dee2e6;
+        }
+
+        .page-link {
+            position: relative;
+            display: block;
+            color: #0d6efd;
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .page-link:hover {
+            z-index: 2;
+            color: #0a58ca;
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        .pagination-sm .page-link {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .pagination-sm .page-item:first-child .page-link {
+            border-top-left-radius: 0.25rem;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .pagination-sm .page-item:last-child .page-link {
+            border-top-right-radius: 0.25rem;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        /* Bootstrap Responsive Utilities */
+        @media (min-width: 768px) {
+            .modal-dialog {
+                max-width: 500px;
+                margin: 1.75rem auto;
+            }
+            .modal-lg {
+                max-width: 800px;
+            }
+        }
+
+        /* Custom Dashboard Styles */
+        :root {
+            --primary: #0c5054;
+            --primary-light: #e8f1fd;
+            --secondary: #afdde5;
+            --tertiary: #024950; 
+            --success: #28a745;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --border: #dee2e6;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: #e2eaeb;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .page-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            zoom: 0.8;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg,#0c5054,#769da5);
+            color: white;
+            border-radius: 10px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .equal-height-row {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .equal-height-row .card-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .card-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            padding: 25px;
+            margin-bottom: 25px;
+            max-height: 95%;
+            transition: var(--transition);
+        }
+
+        .section-title {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .table-container {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-state {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 3rem;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            margin: 0 5px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            animation: pulse-dot 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        
+        @keyframes pulse-dot {
+            0%, 80%, 100% {
+                transform: scale(0.3);
+                opacity: 0.5;
+            } 40% {
+                transform: scale(1.0);
+                opacity: 1;
+            }
+        }
+
+        .loading-text {
+            margin-top: 15px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        .employee-image {
+            width: 40px; height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid var(--primary-light);
+            display: block; margin: 0 auto;
+            transition: var(--transition);
+            position: relative; z-index: 1;
+        }
+
+        .employee-image:hover {
+            transform: scale(1.1);
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .image-cell {
+            text-align: center; vertical-align: middle;
+            padding: 8px; width: 70px; position: relative;
+        }
+
+        .image-cell::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 100%;
+            transform: translateY(-50%);
+            width: 120px; height: 120px;
+            background-image: var(--hover-image);
+            background-size: cover; background-position: center;
+            border-radius: 8px; border: 3px solid var(--primary);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            margin-left: 10px;
+        }
+
+        .image-cell:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .fixed-table { table-layout: fixed; width: 100%; }
+        .fixed-table th, .fixed-table td { word-wrap: break-word; overflow-wrap: break-word; }
+
+        /* Column widths for main reports table */
+        .manager-table th:nth-child(1) { width: 10%; }
+        .manager-table th:nth-child(2) { width: 18%; }
+        .manager-table th:nth-child(3) { width: 16%; }
+        .manager-table th:nth-child(4) { width: 11%; }
+        .manager-table th:nth-child(5) { width: 9%; }
+        .manager-table th:nth-child(6) { width: 9%; }
+        .manager-table th:nth-child(7) { width: 12%; }
+        .manager-table th:nth-child(8) { width: 15%; }
+
+        /* Reports table column widths */
+        .reports-table th:nth-child(1) { width: 9%; }
+        .reports-table th:nth-child(2) { width: 20%; }
+        .reports-table th:nth-child(3) { width: 16%; }
+        .reports-table th:nth-child(4) { width: 11%; }
+        .reports-table th:nth-child(5) { width: 8%; }
+        .reports-table th:nth-child(6) { width: 8%; }
+        .reports-table th:nth-child(7) { width: 9%; }
+        .reports-table th:nth-child(8) { width: 9%; }
+        .reports-table th:nth-child(9) { width: 10%; }
+
+        .table th { background-color: var(--primary); color: white; font-weight: 600; vertical-align: middle; padding: 15px; }
+        .table td { vertical-align: middle; padding: 12px 15px; }
+        .table-hover tbody tr:hover { background-color: var(--primary-light); }
+        
+        .more-button { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            padding: 6px 12px; 
+            font-size: 0.85rem; 
+            font-weight: 500; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        
+        .more-button:hover { 
+            background: #0c595f; 
+            transform: translateY(-1px); 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
+            color: white; 
+        }
+
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-present { background: linear-gradient(135deg, #d4edda, #c3e6cb); color: #155724; border: 1px solid #c3e6cb; }
+        .status-absent { background: linear-gradient(135deg, #f8d7da, #f1b0b7); color: #721c24; border: 1px solid #f1b0b7; }
+        .ongoing-session { color: #28a745; font-weight: bold; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+        .search-container { position: relative; flex: 2; min-width: 250px; }
+        .search-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--secondary); pointer-events: none; }
+        .dropdown-options { position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; max-height: 280px; overflow-y: auto; background: white; border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none; }
+        .dropdown-item { padding: 10px 15px; border-bottom: 1px solid var(--border); transition: var(--transition); cursor: pointer; }
+        .dropdown-item:hover { background: var(--primary-light); }
+        .filters-container { background: var(--light); border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
+        .filter-group { flex: 1; min-width: 180px; }
+        .filter-label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--tertiary); font-size: 0.9rem; }
+        .form-control, .form-select { border: 1px solid var(--border); border-radius: 6px; padding: 10px; transition: var(--transition); }
+        .form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 0.2rem rgba(44, 111, 187, 0.25); }
+        
+        .stats-card { 
+            background: white; 
+            border-radius: 8px; 
+            padding: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); 
+            border-left: 4px solid var(--primary); 
+        }
+        
+        .stats-label { 
+            font-size: 0.8rem; 
+            color: var(--tertiary); 
+            margin-bottom: 3px; 
+        }
+        
+        .stats-value { 
+            font-size: 1.2rem; 
+            font-weight: 600; 
+            color: var(--primary); 
+        }
+        
+        .sort-btn { background: transparent; border: none; padding: 0; font-size: 0.9rem; color: var(--secondary); transition: var(--transition); }
+        .sort-btn:hover { color: white; }
+        .modal-header { background: linear-gradient(to right, #0f766e, #155e75); color: white; }
+        .modal-content { border-radius: 10px; overflow: hidden; }
+        .attendance-summary { display: flex; gap: 15px; margin-bottom: 20px; }
+        .summary-card { flex: 1; background: white; border-radius: 8px; padding: 15px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; transition: var(--transition); }
+        .summary-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .summary-number { font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
+        .summary-label { color: #666; font-size: 0.9rem; }
+        .present-number { color: #28a745; }
+        .absent-number { color: #dc3545; }
+        .total-number { color: var(--primary); }
+        .pagination-container { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 15px 0; border-top: 1px solid var(--border); }
+        .pagination-info { color: var(--primary); font-size: 0.9rem; }
+        .pagination-controls { display: flex; align-items: center; gap: 10px; }
+        .page-link { color: var(--primary); border: 1px solid var(--border); }
+        .page-link:hover { background-color: var(--primary-light); }
+        .page-item.active .page-link { background-color: var(--primary); color: white; border-color: var(--primary); }
+        .error-message { color: #dc3545; text-align: center; padding: 20px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; }
+
+        /* Hide performance overview in modal for managers */
+        .modal-body .performance-overview.manager-hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .filters-container, .attendance-summary, .pagination-container { flex-direction: column; gap: 15px; }
+            .page-container { padding: 15px; }
+            .equal-height-row { flex-direction: column; }
+        }
+            </style>
+</head>
+<body>
+    <div class="page-container">
+        <header class="dashboard-header d-flex justify-content-between align-items-center flex-wrap">
+            <div>
+                <h2 class="text-white fw-bold mb-1" style="font-size: 1.6rem;">Attendance Dashboard</h2>
+                <small class="text-light" style="opacity: 0.85;">Track Employee Attendance and Performance</small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-user-circle text-white me-2" style="font-size: 1.5rem;"></i>
+                <span class="text-white fw-semibold" id="current-user-name" style="font-size: 1rem;"></span>
+            </div>
+        </header>
+
+        <div class="attendance-summary">
+            <div class="summary-card" onclick="filterBySummary('total')">
+                <div class="summary-number total-number" id="total-employees">-</div>
+                <div class="summary-label">Total Employees</div>
+            </div>
+            <div class="summary-card" onclick="filterBySummary('present')">
+                <div class="summary-number present-number" id="present-count">-</div>
+                <div class="summary-label">Present Today</div>
+            </div>
+            <div class="summary-card" onclick="filterBySummary('absent')">
+                <div class="summary-number absent-number" id="absent-count">-</div>
+                <div class="summary-label">Absent Today</div>
+            </div>
+        </div>
+
+        <div class="row equal-height-row" id="manager-daily-section">
+            <div class="col-lg-9">
+                <div class="card-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="section-title mb-0" id="manager-title" style="white-space: nowrap;"></h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3" id="manager-date-controls">
+                            <div class="d-flex align-items-center">
+                                <label class="filter-label" style="min-width: max-content;"><i class="fas fa-calendar me-1"></i> Select Date : &nbsp;</label>
+                                <input type="date" id="date-picker-manager" class="form-control border border-primary" style="max-width: 250px; min-width: 200px;">
+                                <i id="reset-to-today-manager" class="fa fa-refresh ms-3" style="font-size:24px; cursor: pointer;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="manager-table-container" class="table-container">
+                        <div class="loading-overlay" id="manager-table-loader">
+                             <div>
+                                <div class="loading-dots">
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                    <div class="dot"></div>
+                                </div>
+                                <div class="loading-text">Loading...</div>
+                            </div>
+                        </div>
+                        <table class="table table-hover fixed-table manager-table">
+                            <thead><tr><th>Image</th><th>Employee Name</th><th>Department</th><th>Status</th><th>Checkin</th><th>Checkout</th><th>Work Time (hrs)</th><th>Action</th></tr></thead>
+                            <tbody id="main-data"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="card-container">
+                    <h4 class="section-title">Performance Overview</h4>
+                    <div class="row">
+                        <div class="col-12"><div class="stats-card"><div class="stats-label"><i class="fas fa-clock me-1"></i> Today's Hours</div><div class="stats-value" id="manager-today-hours">-</div></div></div>
+                        <div class="col-12"><div class="stats-card"><div class="stats-label"><i class="fas fa-calendar-week me-1"></i> Weekly Average</div><div class="stats-value" id="manager-weekly-hours">-</div></div></div>
+                        <div class="col-12"><div class="stats-card"><div class="stats-label"><i class="fas fa-calendar-alt me-1"></i> Monthly Average</div><div class="stats-value" id="manager-monthly-hours">-</div></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="report-container" class="card-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="section-title mb-0">Team Attendance Report</h4>
+                <div class="d-flex">
+                    <button class="btn btn-outline-primary me-2" id="reset-filters"><i class="fas fa-sync-alt me-1"></i> Reset</button>
+                    <button class="btn btn-outline-primary" onclick="showExportModal()"><i class="fas fa-file-export me-1"></i> Export</button>
+                </div>
+            </div>
+            
+            <div class="d-flex align-items-center mb-3" id="admin-date-picker" style="display: none;">
+                <label class="filter-label me-2"><i class="fas fa-calendar me-1"></i> Select Date:</label>
+                <input type="date" id="date-picker-admin" class="form-control border border-primary" style="max-width: 200px;">
+                <i id="reset-to-today-admin" class="fa fa-refresh ms-3" style="font-size:24px; cursor: pointer;"></i>
+            </div>
+            
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-building me-1"></i> Department</label>
+                    <select class="form-control form-select" id="department-filter"><option value="">All Departments</option></select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-user-tie me-1"></i> Reports To</label>
+                    <select class="form-control form-select" id="reports-to-filter"><option value="">All Managers</option></select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label"><i class="fas fa-search me-1"></i> Search Employee</label>
+                    <div class="search-container">
+                        <input class="form-control" id="dropdown-search" type="text" placeholder="Enter employee name..." style="padding-right: 35px;">
+                        <i class="fas fa-search search-icon"></i>
+                        <div class="dropdown-options" id="dropdown-options"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reports-table-container" class="table-container">
+                 <div class="loading-overlay" id="reports-table-loader">
+                    <div>
+                        <div class="loading-dots">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                        <div class="loading-text">Loading Reports...</div>
+                    </div>
+                </div>
+                <table class="table table-hover fixed-table reports-table" id="main-data-table">
+                    <thead>
+                        <tr>
+                            <th>Profile</th>
+                            <th><div class="d-flex justify-content-between">Employee Name <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('employee', 'asc')">↑</button><button class="sort-btn" onclick="sortData('employee', 'desc')">↓</button></div></div></th>
+                            <th><div class="d-flex justify-content-between">Department <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('department', 'asc')">↑</button><button class="sort-btn" onclick="sortData('department', 'desc')">↓</button></div></div></th>
+                            <th>Status</th>
+                            <th><div class="d-flex justify-content-between">Checkin <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('entry_time', 'asc')">↑</button><button class="sort-btn" onclick="sortData('entry_time', 'desc')">↓</button></div></div></th>
+                            <th><div class="d-flex justify-content-between">Checkout <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('exit_time', 'asc')">↑</button><button class="sort-btn" onclick="sortData('exit_time', 'desc')">↓</button></div></div></th>
+                            <th><div class="d-flex justify-content-between">Weekly Avg <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('weekly_avg', 'asc')">↑</button><button class="sort-btn" onclick="sortData('weekly_avg', 'desc')">↓</button></div></div></th>
+                            <th><div class="d-flex justify-content-between">Monthly Avg <div class="d-flex flex-column"><button class="sort-btn" onclick="sortData('monthly_avg', 'asc')">↑</button><button class="sort-btn" onclick="sortData('monthly_avg', 'desc')">↓</button></div></div></th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reports-data"></tbody>
+                </table>
+                <div class="pagination-container">
+                    <div class="pagination-info"><span id="pagination-info"></span></div>
+                    <div class="pagination-controls">
+                        <div>
+                            <label for="records-per-page-select" class="me-2">Show:</label>
+                            <select class="form-select form-select-sm d-inline-block" id="records-per-page-select" style="width: auto;">
+                                <option value="10" selected>10</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+                            </select>
+                        </div>
+                        <nav><ul class="pagination pagination-sm mb-0" id="pagination-controls"></ul></nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="employeeDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-clock me-2"></i><span id="modal-title-text">Employee Details</span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6 class="fw-bold" id="employee-modal-name"></h6>
+                        <div class="row">
+                            <div class="col-md-6"><small class="text-muted">Department:</small> <strong id="employee-modal-department">-</strong></div>
+                            <div class="col-md-6" id="reports-to-container"><small class="text-muted">Reports To:</small> <strong id="employee-modal-reports">-</strong></div>
+                        </div>
+                    </div>
+                    <div class="border-top pt-3 mb-4 performance-overview">
+                        <h6 class="mb-3">Performance Overview</h6>
+                        <div class="row">
+                            <div class="col-md-4"><div class="stats-card"><div class="stats-label">Today's Hours</div><div class="stats-value" id="employee-modal-today">-</div></div></div>
+                            <div class="col-md-4"><div class="stats-card"><div class="stats-label">Weekly Average</div><div class="stats-value" id="employee-modal-weekly">-</div></div></div>
+                            <div class="col-md-4"><div class="stats-card"><div class="stats-label">Monthly Average</div><div class="stats-value" id="employee-modal-monthly">-</div></div></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="mb-3">Check-in/Check-out Sessions</h6>
+                        <div id="logs-container"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="exportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-export me-2"></i>Export Report</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="exportForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label for="export-employee" class="form-label"><i class="fas fa-user me-1"></i>Employee</label><select class="form-select" id="export-employee"><option value="">All Employees</option></select></div>
+                            <div class="col-md-6 mb-3"><label for="export-department" class="form-label"><i class="fas fa-building me-1"></i>Department</label><select class="form-select" id="export-department"><option value="">All Departments</option></select></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label for="export-from-date" class="form-label"><i class="fas fa-calendar me-1"></i>From Date <span class="text-danger">*</span></label><input type="date" class="form-control" id="export-from-date" required></div>
+                            <div class="col-md-6 mb-3"><label for="export-to-date" class="form-label"><i class="fas fa-calendar me-1"></i>To Date <span class="text-danger">*</span></label><input type="date" class="form-control" id="export-to-date" required></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-1"></i>Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="processExport()"><i class="fas fa-download me-1"></i>Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+ <script>
+        // Bootstrap Modal Implementation
+        class Modal {
+            constructor(element) {
+                this.element = element;
+                this.backdrop = null;
+            }
+
+            show() {
+                // Create backdrop
+                this.backdrop = document.createElement('div');
+                this.backdrop.className = 'modal-backdrop';
+                document.body.appendChild(this.backdrop);
+                
+                // Show modal
+                this.element.style.display = 'block';
+                this.element.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                
+                // Add click listener to backdrop
+                this.backdrop.addEventListener('click', () => this.hide());
+            }
+
+            hide() {
+                this.element.style.display = 'none';
+                this.element.classList.remove('show');
+                
+                if (this.backdrop) {
+                    document.body.removeChild(this.backdrop);
+                    this.backdrop = null;
+                }
+                
+                document.body.style.overflow = '';
+            }
+
+            static getInstance(element) {
+                if (!element._modalInstance) {
+                    element._modalInstance = new Modal(element);
+                }
+                return element._modalInstance;
+            }
+        }
+
+        // Bootstrap modal API compatibility
+        window.bootstrap = {
+            Modal: {
+                getInstance: (element) => Modal.getInstance(element)
+            }
+        };
+
+        // Add event listeners for modal close buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const modal = this.closest('.modal');
+                    if (modal) {
+                        Modal.getInstance(modal).hide();
+                    }
+                });
+            });
+        });
+
+        // --- STATE & CONFIG ---
+        let currentPage = 1, recordsPerPage = 10, totalRecords = 0;
+        let allEmployeeData = [], filteredData = [];
+        let currentDate = new Date().toISOString().split('T')[0];
+        let managerData = null;
+        let isAdminUser = false, searchTimeout, activeSummaryFilter = 'total';
+        const API_BASE_URL = `${window.location.origin}/api/method/sil.test.updated_api.fetch_checkins`;
+        const EXPORT_API_URL = `${window.location.origin}/api/method/sil.test.export.export_attendance`;
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDatePickers();
+            setupEventListeners();
+            loadDashboardData();
+        });
+
+        function initializeDatePickers() {
+            const today = new Date().toISOString().split('T')[0];
+            ['date-picker-manager', 'date-picker-admin', 'export-from-date', 'export-to-date'].forEach(id => {
+                const picker = document.getElementById(id);
+                if (picker) {
+                    if (id.includes('date-picker')) picker.value = today;
+                    picker.setAttribute("max", today);
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            document.getElementById('date-picker-manager').addEventListener('change', handleDateChange);
+            document.getElementById('date-picker-admin').addEventListener('change', handleDateChange);
+            document.getElementById('reset-to-today-manager').addEventListener('click', resetToToday);
+            document.getElementById('reset-to-today-admin').addEventListener('click', resetToToday);
+            document.getElementById('records-per-page-select').addEventListener('change', changeRecordsPerPage);
+            document.getElementById('department-filter').addEventListener('change', handleDepartmentFilter);
+            document.getElementById('reports-to-filter').addEventListener('change', handleReportsToFilter);
+            document.getElementById('dropdown-search').addEventListener('input', handleSearchInput);
+            document.getElementById('dropdown-search').addEventListener('focus', showEmployeeDropdown);
+            document.getElementById('dropdown-search').addEventListener('blur', () => setTimeout(hideEmployeeDropdown, 150));
+            document.getElementById('reset-filters').addEventListener('click', resetFilters);
+            document.getElementById('export-employee').addEventListener('change', handleExportEmployeeChange);
+        }
+
+        // --- LOADING & API ---
+        function showLoading(containerId) {
+            const container = document.getElementById(containerId);
+            const loader = document.getElementById(containerId.replace('container', 'loader'));
+            if (container && loader) {
+                container.classList.add('loading-state');
+                loader.classList.add('show');
+            }
+        }
+
+        function hideLoading(containerId) {
+            const container = document.getElementById(containerId);
+            const loader = document.getElementById(containerId.replace('container', 'loader'));
+            if (container && loader) {
+                container.classList.remove('loading-state');
+                loader.classList.remove('show');
+            }
+        }
+
+        async function loadDashboardData() {
+            showLoading('manager-table-container');
+            showLoading('reports-table-container');
+            try {
+                const response = await fetch(`${API_BASE_URL}?specific_date=${currentDate}`);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const data = await response.json();
+                const message = data.message || data;
+                
+                processApiResponse(message);
+                updateDashboard();
+                updateUserInterface();
+                populateEmployeeData();
+                populateFilterDropdowns();
+                populateExportModal();
+            } catch (error) {
+                showErrorMessage(error.message);
+            } finally {
+                hideLoading('manager-table-container');
+                hideLoading('reports-table-container');
+            }
+        }
+
+        // --- DATA PROCESSING & UI ---
+        function processApiResponse(response) {
+            isAdminUser = response.user_id === "Administrator";
+            managerData = response.manager_data || null;
+            allEmployeeData = Object.values(response.subordinates_data || {})
+                .map(empData => createEmployeeRecord(empData))
+                .filter(Boolean)
+                .sort((a, b) => a.employee.localeCompare(b.employee));
+        }
+
+        function createEmployeeRecord(data) {
+            const info = data?.employee_info || {};
+            const daily = data?.daily_data || {};
+            return {
+                id: info.name, image: info.image,
+                employee: info.emp_display_name || info.name,
+                department: info.department || 'N/A', reports_to: info.reports_to || 'N/A',
+                status: daily.status || 'Absent', entry_time: daily.entry_time || '-', exit_time: daily.exit_time || '-',
+                work_time: daily.daily_working_hours || 0,
+                weekly_avg: data.weekly_summary?.average_work_hours || 0,
+                monthly_avg: data.monthly_summary?.average_work_hours || 0,
+                checkin_pairs: daily.checkin_pairs || [], raw_data: data
+            };
+        }
+
+        function updateDashboard() {
+            const presentCount = allEmployeeData.filter(emp => emp.status === 'Present').length;
+            document.getElementById('total-employees').textContent = allEmployeeData.length;
+            document.getElementById('present-count').textContent = presentCount;
+            document.getElementById('absent-count').textContent = allEmployeeData.length - presentCount;
+            if (!isAdminUser && managerData) {
+                document.getElementById('manager-today-hours').textContent = formatHours(managerData.daily_data?.daily_working_hours);
+                document.getElementById('manager-weekly-hours').textContent = formatHours(managerData.weekly_summary?.average_work_hours);
+                document.getElementById('manager-monthly-hours').textContent = formatHours(managerData.monthly_summary?.average_work_hours);
+            }
+        }
+
+        function updateUserInterface() {
+            const userName = isAdminUser ? 'Administrator' : (managerData?.employee_info?.emp_display_name || 'Manager');
+            document.getElementById('current-user-name').textContent = userName;
+            document.getElementById('manager-title').textContent = userName + ' - Daily Summary';
+            document.getElementById('manager-daily-section').style.display = isAdminUser ? 'none' : 'flex';
+            document.getElementById('admin-date-picker').style.display = isAdminUser ? 'flex' : 'none';
+            if (!isAdminUser) populateManagerTable();
+        }
+
+        function populateManagerTable() {
+            const tbody = document.getElementById('main-data');
+            if (!managerData?.employee_info) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">Manager data not available.</td></tr>';
+                return;
+            }
+            const managerRecord = createEmployeeRecord(managerData);
+            const imageUrl = managerRecord.image ? `${window.location.origin}${managerRecord.image}` : getDefaultImage();
+            tbody.innerHTML = `
+                <tr>
+                    <td class="image-cell" style="--hover-image: url('${imageUrl}')">
+                        <img class="employee-image" src="${imageUrl}" alt="${managerRecord.employee}" onerror="this.src=getDefaultImage(); this.parentElement.style.setProperty('--hover-image', 'url(' + getDefaultImage() + ')');"/>
+                    </td>
+                    <td>${managerRecord.employee}</td><td>${managerRecord.department}</td>
+                    <td>${getStatusBadge(managerRecord)}</td><td>${managerRecord.entry_time}</td>
+                    <td class="${getExitTimeDisplay(managerRecord).includes('Ongoing') ? 'ongoing-session' : ''}">${getExitTimeDisplay(managerRecord)}</td>
+                    <td>${(managerRecord.work_time || 0).toFixed(2)}</td>
+                    <td><button class="btn btn-sm more-button" onclick="showManagerDetails()"><i class="fas fa-eye me-1"></i>More</button></td>
+                </tr>`;
+        }
+        
+        // --- EVENT HANDLERS & FILTERS ---
+        function handleDateChange(event) {
+            currentDate = event.target.value;
+            document.getElementById('date-picker-manager').value = currentDate;
+            document.getElementById('date-picker-admin').value = currentDate;
+            loadDashboardData();
+        }
+
+        function resetToToday() {
+            const today = new Date().toISOString().split('T')[0];
+            if (currentDate !== today) {
+                currentDate = today;
+                document.getElementById('date-picker-manager').value = today;
+                document.getElementById('date-picker-admin').value = today;
+                loadDashboardData();
+            }
+        }
+
+        function applyFilters() {
+            const dept = document.getElementById('department-filter').value;
+            const manager = document.getElementById('reports-to-filter').value;
+            const search = document.getElementById('dropdown-search').value.toLowerCase();
+            filteredData = allEmployeeData.filter(e => 
+                (!dept || e.department === dept) && 
+                (!manager || e.reports_to === manager) && 
+                (e.employee.toLowerCase().includes(search)) &&
+                (activeSummaryFilter === 'total' || (activeSummaryFilter === 'present' && e.status === 'Present') || (activeSummaryFilter === 'absent' && e.status === 'Absent'))
+            );
+            totalRecords = filteredData.length;
+            currentPage = 1;
+            displayCurrentPage();
+            updatePaginationInfo();
+            generatePaginationControls();
+        }
+        
+        const handleDepartmentFilter = () => { updateReportsToDropdown(); document.getElementById('reports-to-filter').value = ''; applyFilters(); };
+        const handleReportsToFilter = () => applyFilters();
+        const handleSearchInput = () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { applyFilters(); showEmployeeDropdown(); }, 300); };
+        const resetFilters = () => { ['department-filter', 'reports-to-filter', 'dropdown-search'].forEach(id => document.getElementById(id).value = ''); activeSummaryFilter = 'total'; applyFilters(); };
+        window.filterBySummary = function(type) { 
+            activeSummaryFilter = type; 
+            document.getElementById('department-filter').value = '';
+            document.getElementById('reports-to-filter').value = '';
+            document.getElementById('dropdown-search').value = '';
+            applyFilters(); 
+            populateFilterDropdowns();
+        };
+
+        // --- RENDERING ---
+        function displayCurrentPage() {
+            const start = (currentPage - 1) * recordsPerPage;
+            const end = start + recordsPerPage;
+            const pageData = filteredData.slice(start, end);
+            const tbody = document.getElementById('reports-data');
+            tbody.innerHTML = pageData.length > 0 ? pageData.map(generateAttendanceRow).join('') : `<tr><td colspan="9" class="text-center">No matching records found.</td></tr>`;
+        }
+
+        function generateAttendanceRow(employee) {
+            const imageUrl = employee.image ? `${window.location.origin}${employee.image}` : getDefaultImage();
+            return `
+                <tr>
+                    <td class="image-cell" style="--hover-image: url('${imageUrl}')">
+                        <img class="employee-image" src="${imageUrl}" alt="${employee.employee}" onerror="this.src=getDefaultImage(); this.parentElement.style.setProperty('--hover-image', 'url(' + getDefaultImage() + ')');"/>
+                    </td>
+                    <td>${employee.employee}</td><td>${employee.department}</td>
+                    <td>${getStatusBadge(employee)}</td><td>${employee.entry_time}</td>
+                    <td class="${getExitTimeDisplay(employee).includes('Ongoing') ? 'ongoing-session' : ''}">${getExitTimeDisplay(employee)}</td>
+                    <td><strong>${formatAvgHours(employee.weekly_avg)}</strong></td>
+                    <td><strong>${formatAvgHours(employee.monthly_avg)}</strong></td>
+                    <td><button class="btn btn-sm more-button" onclick="showEmployeeDetails('${employee.id}')"><i class="fas fa-eye me-1"></i>More</button></td>
+                </tr>`;
+        }
+
+        // --- UTILITIES ---
+        const formatHours = h => (typeof h === 'number' && h > 0) ? h.toFixed(2) : '-';
+        const formatAvgHours = h => (typeof h === 'number' && h > 0) ? `${h.toFixed(2)}h` : '-';
+        const getDefaultImage = () => 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNlNWU3ZWIiLz4KPHBhdGggZD0iTTIwIDIwYzIuNzYgMCA1LTIuMjQgNS01cy0yLjI0LTUtNS01LTUgMi4yNC01IDUgMi4yNCA1IDUgNXptMCAyYy0zLjMzIDAtMTAgMS42Ny0xMCA1djNoMjB2LTNjMC0zLjMzLTYuNjctNS0xMC01eiIgZmlsbD0iIzljYTNhZiIvPgo8L3N2Zz4K';
+        const getStatusBadge = emp => emp.status === "Present" ? '<span class="status-badge status-present">Present</span>' : `<span class="status-badge status-absent">${emp.status || 'Absent'}</span>`;
+        const getExitTimeDisplay = emp => (emp.raw_data?.daily_data?.has_ongoing_session || emp.checkin_pairs?.some(p => p.ongoing)) ? 'Ongoing' : (emp.exit_time || "-");
+        
+        function populateSelect(id, options, defaultLabel) {
+            const select = document.getElementById(id);
+            const val = select.value;
+            select.innerHTML = `<option value="">${defaultLabel}</option>`;
+            options.forEach(opt => select.add(new Option(opt.text || opt, opt.value || opt)));
+            select.value = val;
+        }
+
+        function showErrorMessage(message) {
+            const errorRow = (cols) => `<tr><td colspan="${cols}" class="error-message">${message}</td></tr>`;
+            document.getElementById('reports-data').innerHTML = errorRow(9);
+            document.getElementById('main-data').innerHTML = errorRow(8);
+        }
+        
+        // --- MANAGER & EMPLOYEE DETAILS (Global scope for onclick) ---
+        window.showManagerDetails = function() {
+            if (!managerData) return;
+            
+            const managerRecord = createEmployeeRecord(managerData);
+            
+            // Update modal title
+            document.getElementById('modal-title-text').textContent = 'Manager Details';
+            
+            // Populate manager info
+            document.getElementById('employee-modal-name').textContent = managerRecord.employee;
+            document.getElementById('employee-modal-department').textContent = managerRecord.department;
+            
+            // Hide the reports to container for manager
+            document.getElementById('reports-to-container').style.display = 'none';
+            
+            // Hide performance overview since it's already visible in the dashboard
+            const performanceOverview = document.querySelector('.performance-overview');
+            performanceOverview.classList.add('manager-hidden');
+            
+            // Show only check-in sessions
+            displayCheckinSessions(managerRecord);
+            
+            new Modal(document.getElementById('employeeDetailsModal')).show();
+        };
+
+        window.showEmployeeDetails = function(employeeId) {
+            const emp = allEmployeeData.find(e => e.id === employeeId);
+            if (!emp) return;
+            
+            // Update modal title
+            document.getElementById('modal-title-text').textContent = 'Employee Details';
+            
+            // Show reports to container for employees
+            document.getElementById('reports-to-container').style.display = 'block';
+            
+            // Show performance overview for employees
+            const performanceOverview = document.querySelector('.performance-overview');
+            performanceOverview.classList.remove('manager-hidden');
+            
+            document.getElementById('employee-modal-name').textContent = emp.employee;
+            document.getElementById('employee-modal-department').textContent = emp.department;
+            document.getElementById('employee-modal-reports').textContent = emp.reports_to;
+            document.getElementById('employee-modal-today').textContent = formatAvgHours(emp.work_time);
+            document.getElementById('employee-modal-weekly').textContent = formatAvgHours(emp.weekly_avg);
+            document.getElementById('employee-modal-monthly').textContent = formatAvgHours(emp.monthly_avg);
+
+            displayCheckinSessions(emp);
+            
+            new Modal(document.getElementById('employeeDetailsModal')).show();
+        };
+
+        function displayCheckinSessions(employee) {
+            const logsContainer = document.getElementById('logs-container');
+            if (employee.checkin_pairs.length > 0) {
+                let totalHours = 0;
+                logsContainer.innerHTML = `<div class="table-responsive"><table class="table table-sm table-striped"><thead><tr><th>Session</th><th>Check In</th><th>Check Out</th><th>Duration</th><th>Status</th></tr></thead><tbody>${employee.checkin_pairs.map((p, i) => {
+                    totalHours += p.duration || 0;
+                    const status = p.ongoing ? '<span class="badge bg-success">🟢 Ongoing</span>' : (p.auto_closed ? '<span class="badge bg-warning text-dark">Auto-closed</span>' : '<span class="badge bg-secondary">Completed</span>');
+                    return `<tr class="${p.ongoing ? 'table-success' : ''}"><td><strong>Session ${i+1}</strong></td><td>${p.in_time || '-'}</td><td>${p.out_time || '-'}</td><td>${(p.duration || 0).toFixed(2)}h</td><td>${status}</td></tr>`;
+                }).join('')}
+                <tr class="table-info fw-bold"><td><strong>Total</strong></td><td colspan="2"><strong>Total Work Time</strong></td><td><strong>${totalHours.toFixed(2)} hrs</strong></td><td></td></tr>
+                </tbody></table></div>`;
+            } else {
+                logsContainer.innerHTML = '<p class="text-muted">No check-in/check-out data available for this date.</p>';
+            }
+        }
+
+        window.sortData = (field, order) => {
+            filteredData.sort((a, b) => {
+                let valA = a[field], valB = b[field];
+                const timeToMinutes = t => !t || t === '-' ? 0 : t.split(':').reduce((h, m) => h * 60 + +m);
+                if (['work_time', 'weekly_avg', 'monthly_avg'].includes(field)) { valA = parseFloat(valA) || 0; valB = parseFloat(valB) || 0; } 
+                else if (['entry_time', 'exit_time'].includes(field)) { valA = timeToMinutes(valA); valB = timeToMinutes(valB); } 
+                else { valA = String(valA || '').toLowerCase(); valB = String(valB || '').toLowerCase(); }
+                if (valA < valB) return order === 'asc' ? -1 : 1;
+                if (valA > valB) return order === 'asc' ? 1 : -1;
+                return 0;
+            });
+            currentPage = 1;
+            displayCurrentPage();
+            updatePaginationInfo();
+            generatePaginationControls();
+        };
+        
+        // --- Additional Functions ---
+        const populateEmployeeData = () => { filteredData = [...allEmployeeData]; applyFilters(); };
+        const populateFilterDropdowns = () => {
+            const depts = [...new Set(allEmployeeData.map(e => e.department).filter(Boolean))].sort();
+            populateSelect('department-filter', depts, 'All Departments');
+            updateReportsToDropdown();
+        };
+        const updateReportsToDropdown = () => {
+            const dept = document.getElementById('department-filter').value;
+            const managers = [...new Set(allEmployeeData.filter(e => !dept || e.department === dept).map(e => e.reports_to).filter(m => m && m !== 'N/A'))].sort();
+            populateSelect('reports-to-filter', managers, 'All Managers');
+        };
+        const hideEmployeeDropdown = () => document.getElementById('dropdown-options').style.display = 'none';
+        const selectEmployee = (name) => { document.getElementById('dropdown-search').value = name; hideEmployeeDropdown(); applyFilters(); };
+        const showEmployeeDropdown = () => {
+            const dropdown = document.getElementById('dropdown-options');
+            const searchVal = document.getElementById('dropdown-search').value.toLowerCase();
+            
+            dropdown.innerHTML = "";
+            
+            const availableEmployees = filteredData
+                .filter(emp => emp.employee.toLowerCase().includes(searchVal))
+                .sort((a, b) => a.employee.localeCompare(b.employee));
+
+            if (availableEmployees.length === 0) {
+                dropdown.innerHTML = '<div class="dropdown-item text-muted">No employees match filters</div>';
+            } else {
+                availableEmployees.forEach(employee => {
+                    const option = document.createElement('div');
+                    option.className = 'dropdown-item';
+                    option.textContent = employee.employee;
+                    option.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        selectEmployee(employee.employee);
+                    });
+                    dropdown.appendChild(option);
+                });
+            }
+            
+            dropdown.style.display = availableEmployees.length > 0 ? 'block' : 'none';
+        };
+        const changeRecordsPerPage = () => { recordsPerPage = parseInt(document.getElementById('records-per-page-select').value, 10); goToPage(1); };
+        const updatePaginationInfo = () => { const s = totalRecords>0?(currentPage-1)*recordsPerPage+1:0, e = Math.min(currentPage*recordsPerPage,totalRecords); document.getElementById('pagination-info').textContent=`Showing ${s} to ${e} of ${totalRecords} entries`; };
+        const generatePaginationControls = () => { const t = Math.ceil(totalRecords/recordsPerPage), c = document.getElementById('pagination-controls'); if(t<=1){c.innerHTML='';return} let h=`<li class="page-item ${currentPage===1?'disabled':''}"><button class="page-link" onclick="goToPage(${currentPage-1})">&laquo;</button></li>`; for(let i=1;i<=t;i++)h+=`<li class="page-item ${i===currentPage?'active':''}"><button class="page-link" onclick="goToPage(${i})">${i}</button></li>`; h+=`<li class="page-item ${currentPage===t?'disabled':''}"><button class="page-link" onclick="goToPage(${currentPage+1})">&raquo;</button></li>`; c.innerHTML=h; };
+        window.goToPage = (p) => { if (p>=1&&p<=Math.ceil(totalRecords/recordsPerPage)){currentPage=p;displayCurrentPage();updatePaginationInfo();generatePaginationControls()}};
+        const handleExportEmployeeChange = (e) => { const ds=document.getElementById('export-department'), ei=e.target.value; if(ei){const emp=allEmployeeData.find(e=>e.id===ei);ds.value=emp?emp.department:'';ds.disabled=true}else{ds.value='';ds.disabled=false}};
+        const populateExportModal = () => { populateSelect('export-employee', allEmployeeData.map(e => ({ value: e.id, text: e.employee })), 'All Employees'); populateSelect('export-department', [...new Set(allEmployeeData.map(e => e.department).filter(Boolean))].sort(), 'All Departments'); };
+        window.showExportModal = () => { document.getElementById('exportForm').reset(); document.getElementById('export-department').disabled=false; new Modal(document.getElementById('exportModal')).show()};
+        window.processExport = async () => { const em=document.getElementById('export-employee').value,d=document.getElementById('export-department').value,f=document.getElementById('export-from-date').value,t=document.getElementById('export-to-date').value; if(!f||!t)return alert('Please select both From Date and To Date.'); if(new Date(f)>new Date(t))return alert('The "From" date cannot be later than the "To" date.'); let u=`${EXPORT_API_URL}?start=${f}&end=${t}`; if(em)u+=`&emp=${em}`; if(d)u+=`&dept=${d}`; try{const r=await fetch(u); if(!r.ok)throw new Error('Export failed.'); const b=await r.blob(), l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download=`attendance_report_${f}_to_${t}.csv`; l.click(); URL.revokeObjectURL(l.href)}catch(e){alert(`Export failed: ${e.message}`)} Modal.getInstance(document.getElementById('exportModal')).hide()};
+    </script>
+</body>
+</html>
