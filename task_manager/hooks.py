@@ -249,3 +249,7 @@ fixtures = [
         "filters": [["name", "in", ["Project MGT", "Tasks"]]]
     }
 ]
+
+website_route_rules = [
+    {"from_route": "/employee-form", "to_route": "employeeform"}  # maps URL to template
+]

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Form</title>
+    <style>
+        /* Basic Styling Section */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        
+        input:focus, select:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <!-- HTML Form Structure Section -->
+        <h1>Employee Registration Form</h1>
+        <h1>Welcome, {{ frappe.session.user }}</h1>
+        
+        <form id="employeeForm">
+            <div class="form-group">
+                <label for="employeename">Employee Name:</label>
+                <input type="text" id="employeename" name="employeename" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="designation">Designation:</label>
+                <select id="designation" name="designation" required>
+                    <option value="">Select Designation</option>
+                    <!-- Options will be loaded dynamically -->
+                </select>
+            </div>
+            
+            <button type="submit" id="submitBtn">Submit</button>
+        </form>
+        
+        <!-- Message display area -->
+        <div id="messageArea"></div>
+    </div>
+
+    <script>
+        // Global variables
+        let csrfToken = null;
+        
+        // DOM Loading and Initialization Section
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+        
+        async function initializeApp() {
+            await getCSRFToken();
+            await loadDesignations();
+            setupFormSubmission();
+        }
+
+        // CSRF Token Management Section
+        async function getCSRFToken() {
+            console.log('🔍 Starting CSRF token detection...');
+            
+            try {
+                // Method 1: Check if Frappe provides global csrf_token variable
+                console.log('📋 Method 1: Checking global csrf_token variable...');
+                if (typeof csrf_token !== 'undefined' && csrf_token) {
+                    csrfToken = csrf_token;
+                    console.log('✅ SUCCESS - Method 1: CSRF token found in global csrf_token variable');
+                    console.log('🔑 Token preview:', csrf_token.substring(0, 20) + '...');
+                    return;
+                } else {
+                    console.log('❌ Method 1 failed: global csrf_token not found or empty');
+                }
+                
+                // Method 2: Check frappe.csrf_token if frappe object exists
+                console.log('📋 Method 2: Checking frappe.csrf_token...');
+                if (typeof frappe !== 'undefined' && frappe.csrf_token) {
+                    csrfToken = frappe.csrf_token;
+                    console.log('✅ SUCCESS - Method 2: CSRF token found in frappe.csrf_token');
+                    console.log('🔑 Token preview:', frappe.csrf_token.substring(0, 20) + '...');
+                    return;
+                } else {
+                    console.log('❌ Method 2 failed: frappe object not found or frappe.csrf_token empty');
+                }
+                
+                // Method 3: Try to get CSRF token from meta tag
+                console.log('📋 Method 3: Checking meta[name="csrf-token"]...');
+                const metaTag = document.querySelector('meta[name="csrf-token"]');
+                if (metaTag && metaTag.getAttribute('content')) {
+                    csrfToken = metaTag.getAttribute('content');
+                    console.log('✅ SUCCESS - Method 3: CSRF token found in meta tag');
+                    console.log('🔑 Token preview:', csrfToken.substring(0, 20) + '...');
+                    return;
+                } else {
+                    console.log('❌ Method 3 failed: meta[name="csrf-token"] not found or empty');
+                }
+                
+                // Method 4: Check for X-Frappe-CSRF-Token meta tag
+                console.log('📋 Method 4: Checking meta[name="X-Frappe-CSRF-Token"]...');
+                const frappeMetaTag = document.querySelector('meta[name="X-Frappe-CSRF-Token"]');
+                if (frappeMetaTag && frappeMetaTag.getAttribute('content')) {
+                    csrfToken = frappeMetaTag.getAttribute('content');
+                    console.log('✅ SUCCESS - Method 4: CSRF token found in X-Frappe-CSRF-Token meta tag');
+                    console.log('🔑 Token preview:', csrfToken.substring(0, 20) + '...');
+                    return;
+                } else {
+                    console.log('❌ Method 4 failed: X-Frappe-CSRF-Token meta tag not found or empty');
+                }
+
+                // Method 5: Try to get CSRF token from cookie (Frappe format)
+                console.log('📋 Method 5: Checking cookies for CSRF token...');
+                const cookies = document.cookie.split(';');
+                console.log('🍪 Available cookies:', cookies.length);
+                
+                for (let cookie of cookies) {
+                    const [name, value] = cookie.trim().split('=');
+                    if (name === 'csrf_token' || name === 'csrftoken') {
+                        csrfToken = decodeURIComponent(value);
+                        console.log('✅ SUCCESS - Method 5: CSRF token found in cookie:', name);
+                        console.log('🔑 Token preview:', csrfToken.substring(0, 20) + '...');
+                        return;
+                    }
+                }
+                console.log('❌ Method 5 failed: No CSRF token found in cookies');
+                
+                // Method 6: Try to fetch from Frappe API
+                console.log('📋 Method 6: Attempting to fetch CSRF token from API...');
+                try {
+                    const response = await fetch('/api/method/frappe.sessions.get_csrf_token');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.message) {
+                            csrfToken = data.message;
+                            console.log('✅ SUCCESS - Method 6: CSRF token obtained from API');
+                            console.log('🔑 Token preview:', csrfToken.substring(0, 20) + '...');
+                            return;
+                        } else {
+                            console.log('❌ Method 6 failed: API returned empty message');
+                        }
+                    } else {
+                        console.log('❌ Method 6 failed: API request failed with status:', response.status);
+                    }
+                } catch (apiError) {
+                    console.log('❌ Method 6 failed: API request error:', apiError.message);
+                }
+
+                // If we get here, no CSRF token found
+                console.log('🚨 ALL METHODS FAILED: No CSRF token found anywhere!');
+                console.warn('⚠️ CSRF token not found. POST requests may fail with CSRFTokenError.');
+                csrfToken = null;
+
+            } catch (error) {
+                console.error('💥 CRITICAL ERROR in getCSRFToken():', error);
+                csrfToken = null;
+            }
+            
+            // Final status report
+            if (csrfToken) {
+                console.log('🎉 CSRF Token Detection Complete - SUCCESS');
+            } else {
+                console.log('😞 CSRF Token Detection Complete - FAILED');
+            }
+        }
+
+        
+        function getCookieValue(name) {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [cookieName, cookieValue] = cookie.trim().split('=');
+                if (cookieName === name) {
+                    return decodeURIComponent(cookieValue);
+                }
+            }
+            return null;
+        }
+
+        // API Functions Section
+        async function loadDesignations() {
+            try {
+                console.log('Loading designations...');
+                showMessage('Loading designations...', 'loading');
+                
+                // Use your correct API path here
+                const response = await fetch('/api/method/task_manager.services.employeeform.get_designations');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Designations loaded:', data);
+                
+                populateDesignationDropdown(data);
+                clearMessage();
+                
+            } catch (error) {
+                console.error('Error loading designations:', error);
+                showMessage('Error loading designations. Please refresh the page.', 'error');
+            }
+        }
+
+        // UI Helper Functions Section
+        function populateDesignationDropdown(data) {
+            const selectElement = document.getElementById('designation');
+            
+            // Clear existing options except the first placeholder
+            selectElement.innerHTML = '<option value="">Select Designation</option>';
+            
+            // Handle the API response format
+            const designations = data.message || data;
+            
+            if (Array.isArray(designations)) {
+                designations.forEach(designation => {
+                    const option = document.createElement('option');
+                    // Handle different data formats
+                    option.value = designation.name || designation;
+                    option.textContent = designation.title || designation.name || designation;
+                    selectElement.appendChild(option);
+                });
+                
+                console.log(`Loaded ${designations.length} designations`);
+            } else {
+                console.error('Invalid designation data format:', designations);
+                showMessage('Invalid data format received for designations', 'error');
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="message ${type}">${message}</div>`;
+        }
+        
+        function clearMessage() {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = '';
+        }
+
+        // Form Submission Section
+        function setupFormSubmission() {
+            const form = document.getElementById('employeeForm');
+            
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent default form submission
+                await submitEmployeeForm();
+            });
+        }
+
+        async function submitEmployeeForm() {
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            console.log(csrfToken)
+            
+            try {
+                // Validate form data
+                const employeename = document.getElementById('employeename').value.trim();
+                const designation = document.getElementById('designation').value.trim();
+                
+                if (!employeename || !designation) {
+                    showMessage('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+                showMessage('Adding employee...', 'loading');
+                
+                // Prepare form data
+                const formData = {
+                    employeename: employeename,  // Note: changed to match your backend expectation
+                    designation: designation
+                };
+                
+                console.log('Submitting employee data:', formData);
+                
+                // Prepare headers
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                // Add CSRF token if available
+                if (csrfToken) {
+                    headers['X-Frappe-CSRF-Token'] = csrfToken;
+                }
+                
+                // Make POST request with relative URL
+                const response = await fetch('/api/method/task_manager.services.employeeform.add_employee', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Server response:', result);
+                
+                // Handle different response formats
+                if (result.message && result.message.success) {
+                    showMessage('Employee added successfully!', 'success');
+                    document.getElementById('employeeForm').reset();
+                } else if (result.message) {
+                    // Handle error message from server
+                    const errorMsg = typeof result.message === 'string' ? result.message : 'Unknown error occurred';
+                    showMessage(`Error: ${errorMsg}`, 'error');
+                } else {
+                    showMessage('Unexpected response format', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                
+                // Handle specific error types
+                if (error.message.includes('403') || error.message.includes('CSRF')) {
+                    showMessage('Security token expired. Please refresh the page and try again.', 'error');
+                } else if (error.message.includes('404')) {
+                    showMessage('API endpoint not found. Please check the configuration.', 'error');
+                } else if (error.message.includes('500')) {
+                    showMessage('Server error occurred. Please try again later.', 'error');
+                } else {
+                    showMessage('Error adding employee. Please try again.', 'error');
+                }
+            } finally {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+        
+        // Auto-hide success/loading messages
+        setInterval(() => {
+            const messageArea = document.getElementById('messageArea');
+            const messages = messageArea.querySelectorAll('.success, .loading');
+            messages.forEach(msg => {
+                if (msg.parentElement === messageArea) {
+                    // Auto-hide after 3 seconds for success/loading messages
+                    setTimeout(() => {
+                        if (msg.parentElement === messageArea) {
+                            messageArea.removeChild(msg);
+                        }
+                    }, 3000);
+                }
+            });
+        }, 100);
+    </script>
+</body>
+</html>
